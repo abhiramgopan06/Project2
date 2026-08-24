@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block title %}Tenant Dashboard | Rental Platform{% endblock %}{% block content %}
+<div class="container py-5"><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="fw-bold">Tenant Dashboard</h1><p class="text-secondary mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}.</p></div><span class="badge text-bg-success">TENANT</span></div>
+<div class="row g-4"><div class="col-md-4"><div class="stat-card"><div class="fs-3">🔎</div><h5>Search Properties</h5><p>Find your next rental property.</p></div></div><div class="col-md-4"><div class="stat-card"><div class="fs-3">📋</div><h5>My Bookings</h5><p>View requests and booking status.</p></div></div><div class="col-md-4"><div class="stat-card"><div class="fs-3">🛠️</div><h5>Maintenance</h5><p>Raise and track maintenance requests.</p></div></div></div></div>
+{% endblock %}

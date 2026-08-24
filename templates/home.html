@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Home | Rental Platform{% endblock %}
+{% block content %}
+<section class="hero py-5">
+    <div class="container py-5">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="badge text-bg-primary mb-3">Rental Property Management</span>
+                <h1 class="display-4 fw-bold">Find a place. Manage a property. Live better.</h1>
+                <p class="lead text-secondary mt-3">A Django-powered platform for property owners and tenants, with bookings, payments and maintenance management.</p>
+                <div class="d-flex gap-2 mt-4">
+                    <a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Get Started</a>
+                    <a class="btn btn-outline-dark btn-lg" href="{% url 'accounts:login' %}">Login</a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-lg p-4">
+                    <h4 class="fw-bold">Platform foundation</h4>
+                    <ul class="list-group list-group-flush mt-2">
+                        <li class="list-group-item px-0">✓ Role-based authentication</li>
+                        <li class="list-group-item px-0">✓ Owner and tenant dashboards</li>
+                        <li class="list-group-item px-0">✓ Image/media configuration</li>
+                        <li class="list-group-item px-0">✓ Booking, payment and maintenance apps</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
