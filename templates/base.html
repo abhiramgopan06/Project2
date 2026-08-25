@@ -18,8 +18,15 @@
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                 <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'properties:list' %}">Browse Properties</a></li>
                 {% if user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
+                    {% if user.role == "TENANT" %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'bookings:my_requests' %}">My Requests</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'bookings:my_bookings' %}">My Bookings</a></li>
+                    {% elif user.role == "OWNER" %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'bookings:owner_requests' %}">Requests</a></li>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile' %}">Profile</a></li>
                     <li class="nav-item"><a class="btn btn-outline-light btn-sm" href="{% url 'accounts:logout' %}">Logout</a></li>
                 {% else %}

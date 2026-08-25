@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ property.title }} | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-4"><div><span class="badge text-bg-primary">{{ property.get_property_type_display }}</span><h1 class="fw-bold mt-2">{{ property.title }}</h1><p class="text-secondary">📍 {{ property.location }}</p></div><strong class="fs-3">₹{{ property.rent|floatformat:2 }}<small class="text-secondary fs-6"> / month</small></strong></div>
+    {% if property.images.exists %}
+    <div class="row g-3 mb-4">{% for image in property.images.all %}<div class="col-md-4"><img src="{{ image.image.url }}" class="detail-image rounded-4 shadow-sm" alt="{{ image.caption|default:property.title }}"></div>{% endfor %}</div>
+    {% else %}<div class="detail-placeholder rounded-4 mb-4">🏠</div>{% endif %}
+    <div class="row g-4">
+        <div class="col-lg-8"><div class="card border-0 shadow-sm p-4 mb-4"><h3>About this property</h3><p class="text-secondary">{{ property.description }}</p><hr><div class="row"><div class="col-md-6"><strong>Address</strong><p class="text-secondary">{{ property.address }}</p></div><div class="col-md-3"><strong>Rooms</strong><p class="text-secondary">{{ property.number_of_rooms }}</p></div><div class="col-md-3"><strong>Status</strong><p>{% if property.available %}<span class="badge text-bg-success">Available</span>{% else %}<span class="badge text-bg-secondary">Unavailable</span>{% endif %}</p></div></div></div>
+            <div class="card border-0 shadow-sm p-4"><h3>Rooms</h3>{% for room in property.rooms.all %}<div class="border rounded-3 p-3 mb-2 d-flex justify-content-between"><div><strong>Room {{ room.room_number }}</strong><div class="text-secondary">{{ room.get_room_type_display }} · {{ room.description }}</div></div><div class="text-end"><strong>₹{{ room.rent|floatformat:2 }}</strong><br>{% if room.available %}<span class="badge text-bg-success">Available</span>{% else %}<span class="badge text-bg-secondary">Unavailable</span>{% endif %}</div></div>{% empty %}<p class="text-secondary mb-0">No room details have been added yet.</p>{% endfor %}</div></div>
+        <div class="col-lg-4"><div class="card border-0 shadow-sm p-4 mb-4"><h4>Owner</h4><p class="mb-1 fw-semibold">{{ property.owner.get_full_name|default:property.owner.username }}</p><p class="text-secondary mb-0">{{ property.owner.email }}</p></div><div class="card border-0 shadow-sm p-4 mb-4">
+                <h4>Rental</h4>
+                {% if property.available %}
+                    {% if user.is_authenticated and user.role == "TENANT" %}
+                        <a href="{% url 'bookings:create_request' property.pk %}" class="btn btn-primary w-100">Request This Property</a>
+                    {% elif not user.is_authenticated %}
+                        <a href="{% url 'accounts:login' %}?next={% url 'bookings:create_request' property.pk %}" class="btn btn-primary w-100">Login to Request</a>
+                    {% endif %}
+                {% else %}
+                    <button class="btn btn-secondary w-100" disabled>Currently Unavailable</button>
+                {% endif %}
+            </div>
+            <div class="card border-0 shadow-sm p-4"><h4>Amenities</h4>{% for amenity in property.amenities.all %}<span class="badge rounded-pill text-bg-light border me-1 mb-2">{{ amenity.name }}</span>{% empty %}<p class="text-secondary mb-0">No amenities listed.</p>{% endfor %}</div></div>
+    </div>
+</div>
+{% endblock %}

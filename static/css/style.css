@@ -7,3 +7,15 @@ body { min-height: 100vh; }
 form input, form select, form textarea { width: 100%; padding: .65rem .75rem; border: 1px solid #ced4da; border-radius: .5rem; }
 form input[type="file"] { padding: .45rem; }
 .helptext, .help-text { font-size: .875rem; color: #6c757d; }
+
+.property-card { transition: transform .2s ease, box-shadow .2s ease; }
+.property-card:hover { transform: translateY(-4px); box-shadow: 0 1rem 2rem rgba(0,0,0,.08) !important; }
+.property-cover { width: 100%; height: 220px; object-fit: cover; }
+.property-placeholder, .detail-placeholder { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e9ecef, #dee2e6); color: #6c757d; font-size: 4rem; min-height: 220px; }
+.detail-image { width: 100%; height: 260px; object-fit: cover; }
+.manage-image { width: 100%; height: 180px; object-fit: cover; }
+.property-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.amenity-grid ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .75rem; }
+.amenity-grid li { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: .75rem; padding: .5rem .75rem; }
+.summary-row { display: flex; justify-content: space-between; gap: 1rem; padding: .8rem 0; border-bottom: 1px solid #eee; }
+.summary-row:last-child { border-bottom: 0; }
