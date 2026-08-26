@@ -7,6 +7,7 @@ class User(AbstractUser):
         ADMIN = "ADMIN", "Admin"
         OWNER = "OWNER", "Property Owner"
         TENANT = "TENANT", "Tenant"
+        TECHNICIAN = "TECHNICIAN", "Technician"
 
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, blank=True)

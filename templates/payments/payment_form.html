@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Make Payment | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm p-4 h-100">
+        <span class="badge text-bg-success align-self-start">MOCK PAYMENT</span>
+        <h1 class="fw-bold mt-3">Complete Payment</h1>
+        <p class="text-secondary">No real money is charged. This page simulates a rental payment for your project.</p>
+        <hr>
+        <div class="d-flex justify-content-between mb-2"><span>Property</span><strong>{{ booking.property.title }}</strong></div>
+        <div class="d-flex justify-content-between mb-2"><span>Room</span><strong>{% if booking.room %}{{ booking.room.room_number }}{% else %}Entire property{% endif %}</strong></div>
+        <div class="d-flex justify-content-between mb-2"><span>Move-in</span><strong>{{ booking.start_date }}</strong></div>
+        <div class="d-flex justify-content-between fs-4 mt-4"><span>Amount</span><strong>₹{{ amount|floatformat:2 }}</strong></div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm p-4">
+        <h3 class="fw-bold mb-3">Payment Details</h3>
+        <form method="post" novalidate>{% csrf_token %}
+          {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+              {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+          <div class="alert alert-warning small">Demo only: never enter a real card number or CVV.</div>
+          <button class="btn btn-primary w-100" type="submit">Pay ₹{{ amount|floatformat:2 }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

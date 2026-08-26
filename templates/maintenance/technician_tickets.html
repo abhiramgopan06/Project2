@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Technician Dashboard{% endblock %}
+{% block content %}
+<div class="container py-5"><h1>👨‍🔧 Technician Dashboard</h1><p class="text-muted">Your assigned maintenance tickets.</p><div class="row g-4 mt-2">
+{% for ticket in tickets %}<div class="col-md-6"><div class="card shadow-sm h-100"><div class="card-body"><div class="d-flex justify-content-between"><h5>#{{ ticket.pk }} {{ ticket.title }}</h5><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></div><p>{{ ticket.property.title }}{% if ticket.room %} · Room {{ ticket.room.room_number }}{% endif %}</p><p>{{ ticket.description|truncatechars:150 }}</p>{% if ticket.status == 'ASSIGNED' %}<a class="btn btn-primary" href="{% url 'maintenance:start_ticket' ticket.pk %}">Start Work</a>{% elif ticket.status == 'IN_PROGRESS' %}<a class="btn btn-success" href="{% url 'maintenance:resolve_ticket' ticket.pk %}">Resolve Issue</a>{% endif %} <a class="btn btn-outline-secondary" href="{% url 'maintenance:ticket_detail' ticket.pk %}">Details</a></div></div></div>{% empty %}<div class="alert alert-info">No assigned tickets.</div>{% endfor %}</div></div>
+{% endblock %}

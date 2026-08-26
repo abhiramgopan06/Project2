@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Technicians{% endblock %}
+{% block content %}
+<div class="container py-5"><div class="d-flex justify-content-between mb-4"><h1>👨‍🔧 Technicians</h1><a class="btn btn-primary" href="{% url 'maintenance:technician_create' %}">+ Add Technician</a></div>
+<div class="row g-3">{% for tech in technicians %}<div class="col-md-6 col-lg-4"><div class="card shadow-sm h-100"><div class="card-body"><h5>{{ tech.name }}</h5><p class="mb-1">{{ tech.email }}</p><p class="mb-1">{{ tech.phone }}</p><p>{{ tech.specialization|default:'General' }}</p><span class="badge {% if tech.available %}bg-success{% else %}bg-secondary{% endif %}">{% if tech.available %}Available{% else %}Unavailable{% endif %}</span></div></div></div>{% empty %}<div class="alert alert-info">No technicians added yet.</div>{% endfor %}</div></div>
+{% endblock %}

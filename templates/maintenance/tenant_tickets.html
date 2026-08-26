@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}My Maintenance Requests{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h1>🔧 My Maintenance Requests</h1><p class="text-muted">Track issues raised for your rental.</p></div>
+    <a class="btn btn-primary" href="{% url 'maintenance:create_ticket' %}">+ New Request</a>
+  </div>
+  {% if tickets %}
+  <div class="row g-4">
+    {% for ticket in tickets %}
+    <div class="col-md-6 col-xl-4"><div class="card h-100 shadow-sm"><div class="card-body">
+      <div class="d-flex justify-content-between"><h5>{{ ticket.title }}</h5><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></div>
+      <p class="text-muted mb-1">{{ ticket.property.title }}{% if ticket.room %} · Room {{ ticket.room.room_number }}{% endif %}</p>
+      <p>{{ ticket.description|truncatechars:120 }}</p>
+      <span class="badge {% if ticket.priority == 'EMERGENCY' %}bg-danger{% elif ticket.priority == 'HIGH' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">{{ ticket.get_priority_display }}</span>
+      <a class="btn btn-outline-primary btn-sm float-end" href="{% url 'maintenance:ticket_detail' ticket.pk %}">View</a>
+    </div></div></div>
+    {% endfor %}
+  </div>
+  {% else %}<div class="alert alert-info">No maintenance requests yet.</div>{% endif %}
+</div>
+{% endblock %}

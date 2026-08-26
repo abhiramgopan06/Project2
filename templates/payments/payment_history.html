@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Payment History | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="fw-bold">Payment History</h1><p class="text-secondary mb-0">View your rental payment records.</p></div><a class="btn btn-outline-primary" href="{% url 'bookings:my_bookings' %}">My Bookings</a></div>
+  <div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive"><table class="table align-middle mb-0"><thead class="table-light"><tr><th>Property</th><th>Amount</th><th>Method</th><th>Status</th><th>Transaction</th><th>Date</th><th></th></tr></thead><tbody>
+    {% for payment in payments %}<tr><td><strong>{{ payment.booking.property.title }}</strong><div class="small text-secondary">Booking #{{ payment.booking.pk }}</div></td><td>₹{{ payment.amount|floatformat:2 }}</td><td>{{ payment.get_payment_method_display }}</td><td>{% if payment.status == "SUCCESS" %}<span class="badge text-bg-success">Successful</span>{% elif payment.status == "FAILED" %}<span class="badge text-bg-danger">Failed</span>{% else %}<span class="badge text-bg-warning">Pending</span>{% endif %}</td><td class="small">{{ payment.transaction_id }}</td><td>{{ payment.created_at|date:"d M Y, h:i A" }}</td><td><a class="btn btn-sm btn-outline-secondary" href="{% url 'payments:result' payment.pk %}">View</a></td></tr>{% empty %}<tr><td colspan="7" class="text-center text-secondary py-5">No payments yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+</div>
+{% endblock %}

@@ -22,10 +22,16 @@
                 {% if user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
                     {% if user.role == "TENANT" %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'maintenance:tenant_tickets' %}">Maintenance</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'bookings:my_requests' %}">My Requests</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'bookings:my_bookings' %}">My Bookings</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'payments:history' %}">Payments</a></li>
                     {% elif user.role == "OWNER" %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'maintenance:owner_tickets' %}">Maintenance</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'maintenance:technicians' %}">Technicians</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'bookings:owner_requests' %}">Requests</a></li>
+                    {% elif user.role == "TECHNICIAN" %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'maintenance:technician_tickets' %}">My Tickets</a></li>
                     {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile' %}">Profile</a></li>
                     <li class="nav-item"><a class="btn btn-outline-light btn-sm" href="{% url 'accounts:logout' %}">Logout</a></li>

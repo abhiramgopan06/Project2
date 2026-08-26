@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Maintenance Ticket #{{ ticket.pk }}{% endblock %}
+{% block content %}
+<div class="container py-5"><div class="card shadow-sm"><div class="card-body p-4">
+<div class="d-flex justify-content-between"><h2>#{{ ticket.pk }} — {{ ticket.title }}</h2><span class="badge bg-primary fs-6">{{ ticket.get_status_display }}</span></div>
+<hr><p><strong>Property:</strong> {{ ticket.property.title }}</p><p><strong>Room:</strong> {% if ticket.room %}{{ ticket.room.room_number }}{% else %}Whole property{% endif %}</p><p><strong>Priority:</strong> {{ ticket.get_priority_display }}</p><p><strong>Description:</strong><br>{{ ticket.description }}</p>
+{% if ticket.technician %}<p><strong>Technician:</strong> {{ ticket.technician.name }}{% if ticket.technician.specialization %} ({{ ticket.technician.specialization }}){% endif %}</p>{% endif %}
+{% if ticket.technician_note %}<div class="alert alert-success"><strong>Technician note:</strong><br>{{ ticket.technician_note }}</div>{% endif %}
+{% if ticket.owner_note %}<div class="alert alert-secondary"><strong>Owner note:</strong><br>{{ ticket.owner_note }}</div>{% endif %}
+{% if request.user.role == 'OWNER' and ticket.status == 'RESOLVED' %}<a class="btn btn-success" href="{% url 'maintenance:close_ticket' ticket.pk %}">Close Ticket</a>{% endif %}
+</div></div></div>
+{% endblock %}

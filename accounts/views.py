@@ -63,6 +63,8 @@ def dashboard(request):
         return redirect("accounts:admin_dashboard")
     if request.user.role == "OWNER":
         return redirect("accounts:owner_dashboard")
+    if request.user.role == "TECHNICIAN":
+        return redirect("maintenance:technician_tickets")
     return redirect("accounts:tenant_dashboard")
 
 
