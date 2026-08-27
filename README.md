@@ -1,4 +1,4 @@
-# Rental Property Management Platform — Final (Step 10)
+# Rental Property Management Platform 
 
 A Django-based rental property management platform with Admin, Property Owner, Tenant, and Technician roles.
 
