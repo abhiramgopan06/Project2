@@ -52,6 +52,9 @@ def user_login(request):
 
 @login_required
 def user_logout(request):
+    if request.method != "POST":
+        return redirect("accounts:dashboard")
+
     logout(request)
     messages.success(request, "You have been logged out successfully.")
     return redirect("core:home")
@@ -73,7 +76,7 @@ def admin_dashboard(request):
     if not (request.user.is_superuser or request.user.role == "ADMIN"):
         messages.error(request, "Access denied.")
         return redirect("accounts:dashboard")
-    return render(request, "accounts/admin_dashboard.html")
+    return redirect("core:admin_dashboard")
 
 
 @login_required

@@ -1,4 +1,18 @@
-{% extends "base.html" %}{% block title %}Owner Dashboard | Rental Platform{% endblock %}{% block content %}
-<div class="container py-5"><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="fw-bold">Owner Dashboard</h1><p class="text-secondary mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}.</p></div><span class="badge text-bg-primary">PROPERTY OWNER</span></div>
-<div class="row g-4"><div class="col-md-4"><div class="stat-card"><div class="fs-3">🏠</div><h5>My Properties</h5><p>Add and manage rental properties.</p></div></div><div class="col-md-4"><a href="{% url 'bookings:owner_requests' %}" class="text-decoration-none text-dark"><div class="stat-card"><div class="fs-3">📨</div><h5>Tenant Requests</h5><p>Review and approve tenant requests.</p></div></a></div><div class="col-md-4"><div class="stat-card"><div class="fs-3">🔧</div><h5>Maintenance</h5><p>Track and assign maintenance tickets.</p></div></div></div></div>
+{% extends "base.html" %}
+{% block title %}Owner Dashboard | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div><h1 class="fw-bold mb-1">Owner Dashboard</h1><p class="text-secondary mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}.</p></div>
+    <span class="badge text-bg-primary">PROPERTY OWNER</span>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4"><a href="{% url 'properties:owner_property_list' %}" class="dashboard-card"><div class="fs-2">🏠</div><h5>My Properties</h5><p>Add, edit and manage your properties.</p></a></div>
+    <div class="col-md-6 col-lg-4"><a href="{% url 'properties:create' %}" class="dashboard-card"><div class="fs-2">➕</div><h5>Add Property</h5><p>Create a new rental listing.</p></a></div>
+    <div class="col-md-6 col-lg-4"><a href="{% url 'bookings:owner_requests' %}" class="dashboard-card"><div class="fs-2">📨</div><h5>Tenant Requests</h5><p>Review and approve or reject requests.</p></a></div>
+    <div class="col-md-6 col-lg-4"><a href="{% url 'maintenance:owner_tickets' %}" class="dashboard-card"><div class="fs-2">🔧</div><h5>Maintenance</h5><p>Assign and close maintenance tickets.</p></a></div>
+    <div class="col-md-6 col-lg-4"><a href="{% url 'maintenance:technicians' %}" class="dashboard-card"><div class="fs-2">🧑‍🔧</div><h5>Technicians</h5><p>Manage your technician team.</p></a></div>
+    <div class="col-md-6 col-lg-4"><a href="{% url 'accounts:profile' %}" class="dashboard-card"><div class="fs-2">👤</div><h5>My Profile</h5><p>Update your account information.</p></a></div>
+  </div>
+</div>
 {% endblock %}

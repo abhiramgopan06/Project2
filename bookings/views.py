@@ -130,12 +130,11 @@ def approve_request(request, pk):
     conflicting = Booking.objects.filter(
         property=rental_request.property,
         status=Booking.Status.CONFIRMED,
-        start_date__gte=rental_request.move_in_date,
     )
     if rental_request.room:
         conflicting = conflicting.filter(room=rental_request.room)
-    elif conflicting.exists():
-        messages.error(request, "This property already has a confirmed booking from the requested date.")
+    if conflicting.exists():
+        messages.error(request, "This property or room already has a confirmed booking.")
         return redirect("bookings:owner_requests")
 
     rental_request.status = RentalRequest.Status.APPROVED

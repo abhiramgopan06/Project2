@@ -1,5 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from decimal import Decimal, InvalidOperation
+
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -35,16 +37,28 @@ def property_list(request):
         properties = properties.filter(property_type=property_type)
 
     rent_error = ""
+    min_value = max_value = None
     if min_rent:
         try:
-            properties = properties.filter(rent__gte=float(min_rent))
-        except (TypeError, ValueError):
-            rent_error = "Minimum rent must be a valid number."
+            min_value = Decimal(min_rent)
+            if min_value < 0:
+                raise InvalidOperation
+        except (InvalidOperation, TypeError, ValueError):
+            rent_error = "Minimum rent must be a valid non-negative number."
+        else:
+            properties = properties.filter(rent__gte=min_value)
     if max_rent:
         try:
-            properties = properties.filter(rent__lte=float(max_rent))
-        except (TypeError, ValueError):
-            rent_error = "Maximum rent must be a valid number."
+            max_value = Decimal(max_rent)
+            if max_value < 0:
+                raise InvalidOperation
+        except (InvalidOperation, TypeError, ValueError):
+            rent_error = "Maximum rent must be a valid non-negative number."
+        else:
+            properties = properties.filter(rent__lte=max_value)
+    if min_value is not None and max_value is not None and min_value > max_value:
+        rent_error = "Minimum rent cannot be greater than maximum rent."
+        properties = Property.objects.none()
 
     paginator = Paginator(properties, 9)
     page_obj = paginator.get_page(request.GET.get("page", 1))

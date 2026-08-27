@@ -1,4 +1,18 @@
-{% extends "base.html" %}{% block title %}Tenant Dashboard | Rental Platform{% endblock %}{% block content %}
-<div class="container py-5"><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="fw-bold">Tenant Dashboard</h1><p class="text-secondary mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}.</p></div><span class="badge text-bg-success">TENANT</span></div>
-<div class="row g-4"><div class="col-md-4"><a href="{% url 'properties:list' %}" class="text-decoration-none text-dark"><div class="stat-card"><div class="fs-3">🔎</div><h5>Search Properties</h5><p>Find your next rental property.</p></div></a></div><div class="col-md-3"><a href="{% url 'bookings:my_bookings' %}" class="text-decoration-none text-dark"><div class="stat-card"><div class="fs-3">📋</div><h5>My Bookings</h5><p>View requests and booking status.</p></div></a></div><div class="col-md-3"><a href="{% url 'bookings:my_requests' %}" class="text-decoration-none text-dark"><div class="stat-card"><div class="fs-3">📨</div><h5>My Requests</h5><p>Track your rental requests.</p></div></a><div class="col-md-3"><a href="{% url 'payments:history' %}" class="text-decoration-none text-dark"><div class="stat-card"><div class="fs-3">💳</div><h5>Payments</h5><p>View your payment history.</p></div></a></div></div></div>
+{% extends "base.html" %}
+{% block title %}Tenant Dashboard | Rental Platform{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div><h1 class="fw-bold mb-1">Tenant Dashboard</h1><p class="text-secondary mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}.</p></div>
+    <span class="badge text-bg-success">TENANT</span>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-3"><a href="{% url 'properties:list' %}" class="dashboard-card"><div class="fs-2">🔎</div><h5>Search Properties</h5><p>Find your next rental property.</p></a></div>
+    <div class="col-md-6 col-lg-3"><a href="{% url 'bookings:my_requests' %}" class="dashboard-card"><div class="fs-2">📨</div><h5>My Requests</h5><p>Track your rental requests.</p></a></div>
+    <div class="col-md-6 col-lg-3"><a href="{% url 'bookings:my_bookings' %}" class="dashboard-card"><div class="fs-2">📋</div><h5>My Bookings</h5><p>View confirmed rentals.</p></a></div>
+    <div class="col-md-6 col-lg-3"><a href="{% url 'payments:history' %}" class="dashboard-card"><div class="fs-2">💳</div><h5>Payments</h5><p>View payment history.</p></a></div>
+    <div class="col-md-6 col-lg-3"><a href="{% url 'maintenance:tenant_tickets' %}" class="dashboard-card"><div class="fs-2">🔧</div><h5>Maintenance</h5><p>Track maintenance tickets.</p></a></div>
+    <div class="col-md-6 col-lg-3"><a href="{% url 'accounts:profile' %}" class="dashboard-card"><div class="fs-2">👤</div><h5>My Profile</h5><p>Update your personal details.</p></a></div>
+  </div>
+</div>
 {% endblock %}

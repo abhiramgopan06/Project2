@@ -1,120 +1,59 @@
-# Rental Property Management Platform — Step 1.1 + Step 2
+# Rental Property Management Platform — Final (Step 10)
 
-This ZIP contains the Django foundation plus the custom authentication and role system for the Rental Property Management Platform.
+A Django-based rental property management platform with Admin, Property Owner, Tenant, and Technician roles.
 
-## Completed
-- Django project and app configuration
-- Templates, static files and media/image uploads
-- Bootstrap base layout and navigation
-- Custom `accounts.User` model
-- Admin, Property Owner and Tenant roles
-- Owner/Tenant registration
-- Login and logout
-- Role-based dashboard routing and access checks
-- Profile editing and profile image upload
-- Console email on successful registration
-- Django admin integration
-- Custom 403/404/500 templates
-- Placeholder URL modules for Properties, Bookings, Payments and Maintenance
+## Features
+
+- Role-based authentication and authorization
+- Owner property/room/image/amenity management
+- Tenant property discovery, search, and filters
+- Rental requests and owner approval/rejection
+- Booking management
+- Mock payments with transaction history
+- Maintenance ticket workflow: Open → Assigned → In Progress → Resolved → Closed
+- Technician assignment and technician dashboard
+- Property reporting and admin review
+- Email notifications using Django's console email backend
+- Bootstrap responsive UI
+- Form validation, CSRF protection, access control, and automated tests
+- Custom 403/404/500 pages
+
+## Project apps
+
+- `accounts` — authentication, profiles, roles
+- `properties` — properties, rooms, images, amenities
+- `bookings` — rental requests and bookings
+- `payments` — mock payments
+- `maintenance` — technicians and maintenance tickets
+- `core` — home page, admin dashboard, property reports
 
 ## Setup
 
 ```bash
 python -m venv venv
-```
-
-Windows:
-```bash
-venv\Scripts\activate
-```
-
-Install:
-```bash
+venv\\Scripts\\activate       # Windows
 pip install -r requirements.txt
-```
-
-Database:
-```bash
-python manage.py makemigrations
 python manage.py migrate
-```
-
-Create admin:
-```bash
 python manage.py createsuperuser
-```
-
-Run:
-```bash
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000/
+Open `http://127.0.0.1:8000/`.
 
-## Main URLs
-- `/`
-- `/accounts/register/`
-- `/accounts/login/`
-- `/accounts/dashboard/`
-- `/accounts/profile/`
-- `/admin/`
+## Verification
+
+```bash
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test
+```
+
+`run_checks.py` can also be used as a convenience wrapper.
 
 ## Development email
-The project uses Django's console email backend. Registration emails appear in the terminal. Later, this can be switched to SMTP.
 
-## Security note
-Change the development `SECRET_KEY` and configure production settings before deployment.
+The project uses Django's console email backend. During development, email messages are printed in the terminal rather than sent externally.
 
-## Step 3 — Property Management
+## Mock payments
 
-Implemented property management for property owners:
-
-- Property model with owner, title, description, location, address, type, rent and availability
-- Amenity many-to-many relationship
-- Property image uploads, primary image handling and deletion
-- Room management with unique room numbers per property
-- Public property listing and detail pages
-- Search and filters for location, rent, property type and availability
-- Owner-only property CRUD
-- Owner room CRUD
-- Django admin management for properties, images, rooms and amenities
-
-### Step 3 test
-
-```bash
-python manage.py makemigrations properties
-python manage.py migrate
-python manage.py check
-python manage.py runserver
-```
-
-Register/login as an Owner, open the Owner Dashboard, then use **Manage Properties**.
-
-## Step 5 - Rental Requests & Bookings
-- Tenants can request available properties and optionally select an available room.
-- Owners can approve or reject pending requests.
-- Approval creates a confirmed Booking automatically.
-- Approved room/property availability is updated.
-- Tenants can view request and booking status.
-- Email notifications are sent through Django's configured development email backend.
-
-## Step 6 - Mock Payment System
-
-The project now includes a Django mock payment flow connected to confirmed bookings.
-
-### Tenant flow
-1. Owner approves a rental request.
-2. A confirmed booking is created.
-3. Tenant opens **My Bookings** and selects **Make Payment**.
-4. Tenant completes the demo payment form.
-5. The application records a payment with a UUID transaction ID.
-6. Tenant can view the result and payment history.
-
-### Payment methods
-- Mock Card
-- Mock UPI
-- Mock Net Banking
-
-For a mock card, use a 16-digit demo number such as `4111 1111 1111 1111`, an expiry in `MM/YY`, and a 3 or 4 digit CVV. No full card number or CVV is stored.
-
-The form also includes a **simulate result** selector so the project can demonstrate both successful and failed payment paths.
+No real money is processed. Card/CVV values are used for mock validation only. Full card numbers and CVV values are not stored; successful card payments retain only the last four digits.

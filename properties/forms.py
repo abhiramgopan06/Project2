@@ -29,6 +29,17 @@ class PropertyForm(forms.ModelForm):
         self.fields["amenities"].queryset = Amenity.objects.all()
 
 
+    def clean(self):
+        cleaned = super().clean()
+        rooms = cleaned.get("number_of_rooms")
+        rent = cleaned.get("rent")
+        if rooms is not None and rooms < 1:
+            self.add_error("number_of_rooms", "A property must have at least one room.")
+        if rent is not None and rent < 0:
+            self.add_error("rent", "Rent cannot be negative.")
+        return cleaned
+
+
 class PropertyImageForm(forms.ModelForm):
     class Meta:
         model = PropertyImage
