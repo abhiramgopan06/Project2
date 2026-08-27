@@ -40,6 +40,15 @@ python manage.py test
 python manage.py collectstatic --noinput
 ```
 
+## Verified status
+
+All four commands above were re-run before this package was finalized:
+
+- `check` — System check identified no issues.
+- `makemigrations --check --dry-run` — No changes detected (migrations are up to date).
+- `test` — 8/8 tests pass.
+- `collectstatic` — completes cleanly.
+
 For local development:
 
 ```bash

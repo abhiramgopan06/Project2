@@ -19,16 +19,18 @@ class AuthenticationTests(TestCase):
             "email": "newtenant@example.com", "phone": "9876543210", "role": "TENANT",
             "password1": "StrongPass123!", "password2": "StrongPass123!",
         })
-        self.assertRedirects(response, reverse("accounts:dashboard"))
+        # /accounts/dashboard/ itself redirects on to the role-specific
+        # dashboard, so the intermediate hop returns 302, not 200.
+        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
         self.assertTrue(User.objects.filter(username="newtenant").exists())
 
     def test_owner_cannot_open_tenant_dashboard(self):
         self.client.force_login(self.owner)
         response = self.client.get(reverse("accounts:tenant_dashboard"))
-        self.assertRedirects(response, reverse("accounts:dashboard"))
+        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
 
     def test_logout_requires_post(self):
         self.client.force_login(self.tenant)
         response = self.client.get(reverse("accounts:logout"))
-        self.assertRedirects(response, reverse("accounts:dashboard"))
+        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
         self.assertTrue(response.wsgi_request.user.is_authenticated)

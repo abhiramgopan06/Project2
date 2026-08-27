@@ -30,4 +30,6 @@ class PropertyAuthorizationTests(TestCase):
     def test_tenant_cannot_open_owner_property_list(self):
         self.client.force_login(self.tenant)
         response = self.client.get(reverse("properties:owner_property_list"))
-        self.assertRedirects(response, reverse("accounts:dashboard"))
+        # /accounts/dashboard/ redirects on again to the role-specific
+        # dashboard, so the intermediate hop returns 302, not 200.
+        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
