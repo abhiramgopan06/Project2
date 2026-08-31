@@ -1,5 +1,7 @@
+from decimal import Decimal
+
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -34,6 +36,20 @@ class Property(models.Model):
     property_type = models.CharField(max_length=20, choices=PropertyType.choices)
     location = models.CharField(max_length=150, db_index=True)
     address = models.TextField()
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+    )
     number_of_rooms = models.PositiveIntegerField(default=1)
     rent = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     available = models.BooleanField(default=True, db_index=True)
@@ -50,6 +66,23 @@ class Property(models.Model):
     @property
     def primary_image(self):
         return self.images.filter(is_primary=True).first() or self.images.first()
+
+    @property
+    def has_map_location(self):
+        return self.latitude is not None and self.longitude is not None
+
+    @property
+    def map_embed_url(self):
+        if not self.has_map_location:
+            return ""
+        delta = Decimal("0.006")
+        latitude = Decimal(str(self.latitude))
+        longitude = Decimal(str(self.longitude))
+        bbox = (
+            f"{longitude - delta},{latitude - delta},"
+            f"{longitude + delta},{latitude + delta}"
+        )
+        return f"https://www.openstreetmap.org/export/embed.html?bbox={bbox}&marker={latitude},{longitude}&layer=mapnik"
 
 
 class PropertyImage(models.Model):
