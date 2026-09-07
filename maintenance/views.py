@@ -158,7 +158,6 @@ def resolve_ticket(request, pk):
         messages.warning(request, "Only in-progress tickets can be resolved.")
         return redirect("maintenance:technician_tickets")
     if request.method == "POST":
-        ticket.technician_note = request.POST.get("technician_note", "").strip()
         ticket.mark_resolved()
         ticket.technician_note = request.POST.get("technician_note", "").strip()
         ticket.save(update_fields=["technician_note", "updated_at"])

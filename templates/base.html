@@ -21,6 +21,7 @@
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
                 <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'properties:list' %}">Browse Properties</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About Us</a></li>
                 {% if user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:dashboard' %}">Dashboard</a></li>
                     {% if user.role == "TENANT" %}
@@ -69,9 +70,43 @@
 
 <main class="flex-grow-1">{% block content %}{% endblock %}</main>
 
-<footer class="py-4 mt-5 border-top bg-white">
-    <div class="container text-center text-muted small">
-        Rental Property Management Platform 
+<footer class="py-5 mt-5 border-top bg-white site-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">RENTAL PLATFORM</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'core:about' %}">About Us</a></li>
+                    <li><a href="{% url 'core:home' %}">Home</a></li>
+                    <li><a href="{% url 'properties:list' %}">Browse Properties</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">FOR TENANTS</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'accounts:register' %}">How it works</a></li>
+                    <li><a href="{% url 'properties:list' %}">Find a property</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">FOR OWNERS</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'accounts:register' %}">List your property</a></li>
+                    <li><a href="{% url 'accounts:login' %}">Login</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">SUPPORT</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'core:about' %}">Contact us</a></li>
+                    <li>support@rentalplatform.com</li>
+                </ul>
+            </div>
+        </div>
+        <hr>
+        <div class="text-center text-muted small">
+            &copy; {% now "Y" %} Rental Platform &mdash; All rights reserved
+        </div>
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

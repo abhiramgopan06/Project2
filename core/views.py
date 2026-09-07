@@ -19,6 +19,11 @@ def home(request):
     return render(request, "home.html", {"featured_properties": featured})
 
 
+def about(request):
+    # simple about us page, no database data needed
+    return render(request, "core/about.html")
+
+
 def _admin_only(request):
     return request.user.is_authenticated and (request.user.is_superuser or request.user.role == User.Role.ADMIN)
 

@@ -5,6 +5,7 @@ app_name = "core"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("about/", views.about, name="about"),
     path("property/<int:pk>/report/", views.report_property, name="report_property"),
     path("my-reports/", views.my_reports, name="my_reports"),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),

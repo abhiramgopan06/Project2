@@ -100,14 +100,12 @@ def owner_required(view_func):
 
 
 @owner_required
-
 def owner_property_list(request):
     properties = Property.objects.filter(owner=request.user).prefetch_related("images", "rooms")
     return render(request, "properties/owner_property_list.html", {"properties": properties})
 
 
 @owner_required
-
 def property_create(request):
     if request.method == "POST":
         form = PropertyForm(request.POST)
@@ -124,7 +122,6 @@ def property_create(request):
 
 
 @owner_required
-
 def property_update(request, pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     if request.method == "POST":
@@ -139,7 +136,6 @@ def property_update(request, pk):
 
 
 @owner_required
-
 def property_delete(request, pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     if request.method == "POST":
@@ -150,7 +146,6 @@ def property_delete(request, pk):
 
 
 @owner_required
-
 def owner_property_detail(request, pk):
     property_obj = get_object_or_404(
         Property.objects.prefetch_related("images", "rooms", "amenities"),
@@ -162,7 +157,6 @@ def owner_property_detail(request, pk):
 
 
 @owner_required
-
 def property_image_add(request, pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     if request.method != "POST":
@@ -179,7 +173,6 @@ def property_image_add(request, pk):
 
 
 @owner_required
-
 def property_image_delete(request, pk, image_pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     image = get_object_or_404(PropertyImage, pk=image_pk, property=property_obj)
@@ -196,7 +189,6 @@ def property_image_delete(request, pk, image_pk):
 
 
 @owner_required
-
 def room_create(request, pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     if request.method == "POST":
@@ -213,7 +205,6 @@ def room_create(request, pk):
 
 
 @owner_required
-
 def room_update(request, pk, room_pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     room = get_object_or_404(Room, pk=room_pk, property=property_obj)
@@ -229,7 +220,6 @@ def room_update(request, pk, room_pk):
 
 
 @owner_required
-
 def room_delete(request, pk, room_pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     room = get_object_or_404(Room, pk=room_pk, property=property_obj)
