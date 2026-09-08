@@ -7,6 +7,7 @@
     <meta name="description" content="Rental Property Management Platform built with Django.">
     <title>{% block title %}Rental Platform{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -101,6 +102,16 @@
                     <li><a href="{% url 'core:about' %}">Contact us</a></li>
                     <li>support@rentalplatform.com</li>
                 </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold">FOLLOW US</h6>
+                <div class="d-flex gap-3 fs-5">
+                    <a href="#" aria-label="Instagram" class="text-dark"><i class="bi bi-instagram"></i></a>
+                    <a href="#" aria-label="Twitter" class="text-dark"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="Facebook" class="text-dark"><i class="bi bi-facebook"></i></a>
+                    <a href="#" aria-label="LinkedIn" class="text-dark"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" aria-label="YouTube" class="text-dark"><i class="bi bi-youtube"></i></a>
+                </div>
             </div>
         </div>
         <hr>
