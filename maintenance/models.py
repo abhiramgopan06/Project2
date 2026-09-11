@@ -8,6 +8,13 @@ from properties.models import Property, Room
 
 
 class Technician(models.Model):
+    """A repair person that a property owner can assign to tickets.
+
+    Each technician also gets their own login account (the `user` field)
+    so they can log in and see their own list of assigned tickets.
+    """
+
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -35,6 +42,11 @@ class Technician(models.Model):
 
 
 class MaintenanceTicket(models.Model):
+    """A repair/issue reported by a tenant for a property they are renting.
+
+    Life cycle: OPEN -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED
+    """
+
     class Priority(models.TextChoices):
         LOW = "LOW", "Low"
         MEDIUM = "MEDIUM", "Medium"

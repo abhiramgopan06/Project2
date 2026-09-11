@@ -1,7 +1,19 @@
+# ---------------------------------------------------------------------------
+# Maintenance app - views
+#
+# This file handles the full maintenance-ticket workflow:
+#   Tenant     -> creates a ticket for something that needs fixing
+#   Owner      -> assigns a technician to the ticket
+#   Technician -> starts work, then marks the ticket resolved
+#   Owner      -> closes the ticket once it's resolved
+#
+# A ticket moves through these statuses in order:
+#   OPEN -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED
+# ---------------------------------------------------------------------------
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -12,6 +24,11 @@ from .models import MaintenanceTicket, Technician
 
 
 def _email(subject, message, recipient):
+    """Send a short notification email, ignoring any errors.
+
+    This project uses Django's console email backend for development, so
+    these emails are printed to the terminal instead of really being sent.
+    """
     if recipient:
         send_mail(subject, message, None, [recipient], fail_silently=True)
 
@@ -100,6 +117,10 @@ def assign_ticket(request, pk):
 @login_required
 def close_ticket(request, pk):
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, property__owner=request.user)
+    if request.method != "POST":
+        # Closing a ticket changes data, so it must only happen on a real
+        # form submission (POST), never just by visiting a link (GET).
+        return redirect("maintenance:owner_tickets")
     if ticket.status != MaintenanceTicket.Status.RESOLVED:
         messages.warning(request, "Only resolved tickets can be closed.")
     else:
@@ -125,14 +146,24 @@ def technician_create(request):
         return redirect("accounts:dashboard")
     form = TechnicianForm(request.POST or None)
     if form.is_valid():
-        form.save(request.user)
-        messages.success(request, "Technician added successfully.")
-        return redirect("maintenance:technicians")
+        try:
+            # transaction.atomic makes sure that if anything goes wrong while
+            # saving, we don't end up with a half-created technician (for
+            # example a login account with no matching Technician profile).
+            with transaction.atomic():
+                form.save(request.user)
+        except IntegrityError:
+            messages.error(request, "Could not create that technician. Please check the details and try again.")
+        else:
+            messages.success(request, "Technician added successfully.")
+            return redirect("maintenance:technicians")
     return render(request, "maintenance/technician_form.html", {"form": form, "title": "Add Technician"})
 
 
 @login_required
 def technician_tickets(request):
+    """The technician's dashboard: every ticket assigned to them that is
+    not closed yet (Assigned or In Progress)."""
     if request.user.role != "TECHNICIAN":
         messages.error(request, "Only technicians can access this dashboard.")
         return redirect("accounts:dashboard")
@@ -142,7 +173,16 @@ def technician_tickets(request):
 
 @login_required
 def start_ticket(request, pk):
+    """Technician clicks "Start Work": moves an Assigned ticket to In Progress.
+
+    get_object_or_404(..., technician__user=request.user) makes sure a
+    technician can only touch tickets that were actually assigned to them.
+    """
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician__user=request.user)
+    if request.method != "POST":
+        # Same rule as closing a ticket: only a POST submission is allowed
+        # to change the ticket's status.
+        return redirect("maintenance:technician_tickets")
     if ticket.status == MaintenanceTicket.Status.ASSIGNED:
         ticket.status = MaintenanceTicket.Status.IN_PROGRESS
         ticket.save(update_fields=["status", "updated_at"])
@@ -153,6 +193,8 @@ def start_ticket(request, pk):
 
 @login_required
 def resolve_ticket(request, pk):
+    """Technician clicks "Resolve Issue": moves an In Progress ticket to
+    Resolved and saves the note explaining what was fixed."""
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician__user=request.user)
     if ticket.status != MaintenanceTicket.Status.IN_PROGRESS:
         messages.warning(request, "Only in-progress tickets can be resolved.")

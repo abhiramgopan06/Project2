@@ -1,25 +1,139 @@
+/* ==========================================================================
+   Rental Platform - custom styles
+   This file sits on top of Bootstrap. It is plain CSS (no build tools),
+   organised with comments so it is easy to find and change things.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------
+   1) Theme colors
+   Change these variables to re-color the whole site in one place.
+   -------------------------------------------------------------------- */
+:root {
+  --brand-primary: #2f6feb;
+  --brand-primary-dark: #244fb0;
+  --brand-accent: #10b981;
+  --brand-warning: #f59e0b;
+  --brand-danger: #ef4444;
+  --brand-bg: #f6f8fb;
+  --brand-card-border: #e7ebf1;
+  --brand-text-muted: #6b7280;
+  --radius-lg: 1rem;
+  --radius-md: 0.65rem;
+  --shadow-soft: 0 4px 16px rgba(17, 24, 39, 0.06);
+  --shadow-hover: 0 10px 24px rgba(17, 24, 39, 0.12);
+}
+
 body {
   min-height: 100vh;
+  background-color: var(--brand-bg);
+  color: #1f2937;
 }
 
+/* --------------------------------------------------------------------
+   2) Navbar
+   -------------------------------------------------------------------- */
+.navbar {
+  background: linear-gradient(90deg, #10151f, #1c2536) !important;
+}
+
+.navbar-brand {
+  letter-spacing: 0.3px;
+}
+
+.nav-link {
+  transition: color 0.15s ease;
+}
+
+/* --------------------------------------------------------------------
+   3) Buttons
+   Rounded corners and a little "lift" on hover feel more polished
+   without needing any JavaScript.
+   -------------------------------------------------------------------- */
+.btn {
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--brand-primary-dark);
+  border-color: var(--brand-primary-dark);
+}
+
+.btn-success {
+  background-color: var(--brand-accent);
+  border-color: var(--brand-accent);
+}
+
+/* --------------------------------------------------------------------
+   4) Cards
+   Most of the site (dashboards, property listings, tickets) is built
+   from Bootstrap cards, so a shared card style ties everything together.
+   -------------------------------------------------------------------- */
+.card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--brand-card-border);
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* --------------------------------------------------------------------
+   5) Hero section (home page)
+   -------------------------------------------------------------------- */
 .hero {
-  background-color: #eef5ff;
+  background: linear-gradient(135deg, #eaf1ff 0%, #f5faff 60%, #ffffff 100%);
+  border-bottom: 1px solid var(--brand-card-border);
 }
 
-.stat-card {
+/* --------------------------------------------------------------------
+   6) Stat / dashboard cards
+   -------------------------------------------------------------------- */
+.stat-card,
+.dashboard-card {
   height: 100%;
   padding: 1.5rem;
   background: #ffffff;
-  border: 1px solid #e9ecef;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px #cccccc;
+  border: 1px solid var(--brand-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
 }
 
-.stat-card p {
-  color: #6c757d;
+.stat-card p,
+.dashboard-card p {
+  color: var(--brand-text-muted);
   margin-bottom: 0;
 }
 
+.dashboard-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.dashboard-card:hover {
+  color: inherit;
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------
+   7) Profile avatar
+   -------------------------------------------------------------------- */
 .profile-avatar {
   width: 72px;
   height: 72px;
@@ -31,38 +145,55 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0d6efd;
+  background: var(--brand-primary);
   color: #fff;
   font-size: 1.75rem;
   font-weight: bold;
 }
 
+/* --------------------------------------------------------------------
+   8) Form fields
+   Plain <input>/<select>/<textarea> tags (e.g. from {{ form.as_p }})
+   get this shared look so every form on the site matches, even ones
+   that don't set Bootstrap classes explicitly.
+   -------------------------------------------------------------------- */
 form input,
 form select,
 form textarea {
   width: 100%;
-  padding: 10px;
+  padding: 10px 12px;
   border: 1px solid #ced4da;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 form input[type="file"] {
   padding: 7px;
 }
 
+form input:focus,
+form select:focus,
+form textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(47, 111, 235, 0.15);
+}
+
 .helptext,
 .help-text {
   font-size: 14px;
-  color: #6c757d;
+  color: var(--brand-text-muted);
 }
 
-/* Property cards */
+.form-control:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 3px rgba(47, 111, 235, 0.15);
+}
+
+/* --------------------------------------------------------------------
+   9) Property cards
+   -------------------------------------------------------------------- */
 .property-card {
-  border: 1px solid #e9ecef;
-}
-
-.property-card:hover {
-  box-shadow: 0 4px 12px #cccccc;
+  border: 1px solid var(--brand-card-border);
 }
 
 .property-cover {
@@ -76,8 +207,8 @@ form input[type="file"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #dee2e6;
-  color: #6c757d;
+  background: #e9edf3;
+  color: var(--brand-text-muted);
   font-size: 4rem;
   min-height: 220px;
 }
@@ -126,47 +257,52 @@ form input[type="file"] {
   border-bottom: none;
 }
 
-/* Dashboard cards */
-.dashboard-card {
-  display: block;
-  height: 100%;
-  padding: 1.5rem;
-  background: #fff;
-  border: 1px solid #e9ecef;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px #cccccc;
-  color: inherit;
-  text-decoration: none;
-}
-
-.dashboard-card:hover {
-  color: inherit;
-  box-shadow: 0 4px 12px #cccccc;
-}
-
-.dashboard-card p {
-  color: #6c757d;
-  margin-bottom: 0;
-}
-
-.btn {
-  border-radius: 10px;
-}
-
-.card {
-  border-radius: 1rem;
+/* --------------------------------------------------------------------
+   10) Tables (used a lot on the owner + admin ticket/report screens)
+   -------------------------------------------------------------------- */
+.table {
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
 .table td {
   vertical-align: middle;
 }
 
-.form-control:focus,
-.form-select:focus {
-  box-shadow: 0 0 0 3px #cfe2ff;
+.table thead {
+  background-color: #eef2f8;
 }
 
-/* Footer */
+/* --------------------------------------------------------------------
+   11) Maintenance / technician screens
+   A small splash of color so tickets are easy to scan at a glance.
+   -------------------------------------------------------------------- */
+.ticket-card {
+  border-left: 4px solid var(--brand-primary);
+}
+
+.ticket-card.priority-high,
+.ticket-card.priority-emergency {
+  border-left-color: var(--brand-danger);
+}
+
+.ticket-card.priority-medium {
+  border-left-color: var(--brand-warning);
+}
+
+.ticket-card.priority-low {
+  border-left-color: var(--brand-accent);
+}
+
+.badge {
+  border-radius: 999px;
+  font-weight: 500;
+  padding: 0.4em 0.75em;
+}
+
+/* --------------------------------------------------------------------
+   12) Footer
+   -------------------------------------------------------------------- */
 .site-footer h6 {
   color: #212529;
   letter-spacing: 0.5px;
@@ -175,15 +311,15 @@ form input[type="file"] {
 
 .site-footer ul li {
   margin-bottom: 8px;
-  color: #6c757d;
+  color: var(--brand-text-muted);
 }
 
 .site-footer a {
-  color: #6c757d;
+  color: var(--brand-text-muted);
   text-decoration: none;
 }
 
 .site-footer a:hover {
-  color: #0d6efd;
+  color: var(--brand-primary);
   text-decoration: underline;
 }

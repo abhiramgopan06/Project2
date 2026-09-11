@@ -7,6 +7,6 @@
 {% if ticket.technician %}<p><strong>Technician:</strong> {{ ticket.technician.name }}{% if ticket.technician.specialization %} ({{ ticket.technician.specialization }}){% endif %}</p>{% endif %}
 {% if ticket.technician_note %}<div class="alert alert-success"><strong>Technician note:</strong><br>{{ ticket.technician_note }}</div>{% endif %}
 {% if ticket.owner_note %}<div class="alert alert-secondary"><strong>Owner note:</strong><br>{{ ticket.owner_note }}</div>{% endif %}
-{% if request.user.role == 'OWNER' and ticket.status == 'RESOLVED' %}<a class="btn btn-success" href="{% url 'maintenance:close_ticket' ticket.pk %}">Close Ticket</a>{% endif %}
+{% if request.user.role == 'OWNER' and ticket.status == 'RESOLVED' %}<form method="post" action="{% url 'maintenance:close_ticket' ticket.pk %}">{% csrf_token %}<button type="submit" class="btn btn-success">Close Ticket</button></form>{% endif %}
 </div></div></div>
 {% endblock %}

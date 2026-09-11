@@ -9,7 +9,7 @@
   {% if tickets %}
   <div class="row g-4">
     {% for ticket in tickets %}
-    <div class="col-md-6 col-xl-4"><div class="card h-100 shadow-sm"><div class="card-body">
+    <div class="col-md-6 col-xl-4"><div class="card h-100 shadow-sm ticket-card priority-{{ ticket.priority|lower }}"><div class="card-body">
       <div class="d-flex justify-content-between"><h5>{{ ticket.title }}</h5><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></div>
       <p class="text-muted mb-1">{{ ticket.property.title }}{% if ticket.room %} · Room {{ ticket.room.room_number }}{% endif %}</p>
       <p>{{ ticket.description|truncatechars:120 }}</p>
