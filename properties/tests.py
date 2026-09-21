@@ -1,9 +1,13 @@
+from datetime import timedelta
+
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from accounts.models import User
+from bookings.models import Booking, RentalRequest
 from .forms import PropertyForm
-from .models import Amenity, Property
+from .models import Amenity, Property, Room
 
 
 class PropertyAuthorizationTests(TestCase):
@@ -66,3 +70,48 @@ class PropertyMapLocationTests(TestCase):
         self.assertTrue(form.is_valid())
         form = PropertyForm(data=self.form_data)
         self.assertTrue(form.is_valid())
+
+
+class PropertyDeleteProtectionTests(TestCase):
+    """A property or room that already has a booking must not crash when deleted."""
+
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner", email="o@example.com", password="StrongPass123!", role=User.Role.OWNER)
+        self.tenant = User.objects.create_user(username="tenant", email="t@example.com", password="StrongPass123!", role=User.Role.TENANT)
+        self.property = Property.objects.create(
+            owner=self.owner, title="Booked Home", description="A home that has a booking.",
+            property_type=Property.PropertyType.HOUSE, location="Kochi", address="Test Road",
+            number_of_rooms=1, rent=12000, available=True,
+        )
+        self.room = Room.objects.create(property=self.property, room_number="101", rent=5000)
+        start = timezone.localdate() + timedelta(days=5)
+        rental_request = RentalRequest.objects.create(
+            tenant=self.tenant, property=self.property, room=self.room, move_in_date=start, duration_months=3,
+        )
+        Booking.objects.create(
+            rental_request=rental_request, tenant=self.tenant, property=self.property,
+            room=self.room, start_date=start, duration_months=3,
+        )
+        self.client.force_login(self.owner)
+
+    def test_property_with_booking_is_not_deleted_and_shows_message(self):
+        url = reverse("properties:delete", args=[self.property.pk])
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse("properties:owner_property_detail", args=[self.property.pk]))
+        self.assertTrue(Property.objects.filter(pk=self.property.pk).exists())
+
+    def test_room_with_booking_is_not_deleted(self):
+        url = reverse("properties:room_delete", args=[self.property.pk, self.room.pk])
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse("properties:owner_property_detail", args=[self.property.pk]))
+        self.assertTrue(Room.objects.filter(pk=self.room.pk).exists())
+
+    def test_property_without_bookings_can_still_be_deleted(self):
+        empty = Property.objects.create(
+            owner=self.owner, title="Empty Home", description="No bookings here.",
+            property_type=Property.PropertyType.HOUSE, location="Kochi", address="Other Road",
+            number_of_rooms=1, rent=9000, available=True,
+        )
+        response = self.client.post(reverse("properties:delete", args=[empty.pk]))
+        self.assertRedirects(response, reverse("properties:owner_property_list"))
+        self.assertFalse(Property.objects.filter(pk=empty.pk).exists())

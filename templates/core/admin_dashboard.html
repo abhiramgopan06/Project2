@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container py-5">
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-    <div><span class="badge text-bg-dark">ADMIN CONTROL CENTER</span><h1 class="fw-bold mt-2 mb-1">Platform Dashboard</h1><p class="text-secondary mb-0">Monitor users, rentals, payments, maintenance and reports.</p></div>
+    <div><span class="badge text-bg-secondary">ADMIN CONTROL CENTER</span><h1 class="fw-bold mt-2 mb-1">Platform Dashboard</h1><p class="text-secondary mb-0">Monitor users, rentals, payments, maintenance and reports.</p></div>
     <a class="btn btn-outline-dark" href="{% url 'core:admin_reports' %}">⚠️ Property Reports{% if open_reports %} <span class="badge text-bg-danger">{{ open_reports }}</span>{% endif %}</a>
   </div>
   <div class="row g-3 mb-4">

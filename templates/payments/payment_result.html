@@ -10,7 +10,7 @@
     <div class="display-3">❌</div><h1 class="fw-bold text-danger">Payment Failed</h1>
     <p class="text-secondary">No money was charged. You can try the mock payment again.</p>
   {% endif %}
-  <div class="bg-light rounded p-4 text-start mt-3">
+  <div class="bg-body-tertiary rounded p-4 text-start mt-3">
     <div class="d-flex justify-content-between mb-2"><span>Property</span><strong>{{ payment.booking.property.title }}</strong></div>
     <div class="d-flex justify-content-between mb-2"><span>Amount</span><strong>₹{{ payment.amount|floatformat:2 }}</strong></div>
     <div class="d-flex justify-content-between mb-2"><span>Status</span><strong>{{ payment.get_status_display }}</strong></div>

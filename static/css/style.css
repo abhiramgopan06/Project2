@@ -16,17 +16,47 @@
   --brand-danger: #ef4444;
   --brand-bg: #f6f8fb;
   --brand-card-border: #e7ebf1;
+  --brand-text: #1f2937;
   --brand-text-muted: #6b7280;
+  --brand-surface: #ffffff;       /* cards, stat boxes */
+  --brand-surface-alt: #eef2f8;   /* table headers, image placeholders */
+  --brand-hero-start: #eaf1ff;
+  --brand-hero-middle: #f5faff;
+  --brand-hero-end: #ffffff;
   --radius-lg: 1rem;
   --radius-md: 0.65rem;
   --shadow-soft: 0 4px 16px rgba(17, 24, 39, 0.06);
   --shadow-hover: 0 10px 24px rgba(17, 24, 39, 0.12);
 }
 
+/* --------------------------------------------------------------------
+   Dark mode
+   base.html puts data-bs-theme="dark" on the <html> tag when dark mode
+   is on. This block simply replaces the colors above with dark ones, so
+   every rule that uses var(--brand-...) changes automatically.
+   The two --bs-body-bg lines re-color Bootstrap's own cards, inputs and
+   tables so they match the rest of our dark palette.
+   -------------------------------------------------------------------- */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #171d27;
+  --bs-body-bg-rgb: 23, 29, 39;
+  --brand-bg: #0e131a;
+  --brand-card-border: #2d3746;
+  --brand-text: #dee2e6;
+  --brand-text-muted: #9aa4b2;
+  --brand-surface: #171d27;
+  --brand-surface-alt: #222b38;
+  --brand-hero-start: #16233a;
+  --brand-hero-middle: #121b2b;
+  --brand-hero-end: #0e131a;
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
 body {
   min-height: 100vh;
   background-color: var(--brand-bg);
-  color: #1f2937;
+  color: var(--brand-text);
 }
 
 /* --------------------------------------------------------------------
@@ -95,7 +125,7 @@ body {
    5) Hero section (home page)
    -------------------------------------------------------------------- */
 .hero {
-  background: linear-gradient(135deg, #eaf1ff 0%, #f5faff 60%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--brand-hero-start) 0%, var(--brand-hero-middle) 60%, var(--brand-hero-end) 100%);
   border-bottom: 1px solid var(--brand-card-border);
 }
 
@@ -106,7 +136,7 @@ body {
 .dashboard-card {
   height: 100%;
   padding: 1.5rem;
-  background: #ffffff;
+  background: var(--brand-surface);
   border: 1px solid var(--brand-card-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
@@ -162,8 +192,10 @@ form select,
 form textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--bs-border-color);
   border-radius: var(--radius-md);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
 }
 
 form input[type="file"] {
@@ -207,7 +239,7 @@ form textarea:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e9edf3;
+  background: var(--brand-surface-alt);
   color: var(--brand-text-muted);
   font-size: 4rem;
   min-height: 220px;
@@ -217,6 +249,48 @@ form textarea:focus {
   width: 100%;
   height: 260px;
   object-fit: cover;
+}
+
+/* Property image gallery (property detail page) */
+.gallery-main {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+}
+
+.gallery-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  cursor: grab;            /* hand icon: you can drag this row */
+  user-select: none;
+}
+
+.gallery-strip.dragging {
+  cursor: grabbing;
+}
+
+.gallery-thumb {
+  flex: 0 0 auto;          /* keep every picture the same size in the row */
+  width: 160px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 3px solid transparent;
+  opacity: 0.7;
+  -webkit-user-drag: none;
+}
+
+.gallery-thumb.active {
+  border-color: var(--brand-primary);
+  opacity: 1;
+}
+
+@media (max-width: 576px) {
+  .gallery-main {
+    height: 260px;
+  }
 }
 
 .manage-image {
@@ -239,8 +313,8 @@ form textarea:focus {
 }
 
 .amenity-grid li {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
   border-radius: 12px;
   padding: 8px 12px;
 }
@@ -250,7 +324,7 @@ form textarea:focus {
   justify-content: space-between;
   gap: 1rem;
   padding: 13px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-color);
 }
 
 .summary-row:last-child {
@@ -270,7 +344,7 @@ form textarea:focus {
 }
 
 .table thead {
-  background-color: #eef2f8;
+  --bs-table-bg: var(--brand-surface-alt);
 }
 
 /* --------------------------------------------------------------------
@@ -304,7 +378,7 @@ form textarea:focus {
    12) Footer
    -------------------------------------------------------------------- */
 .site-footer h6 {
-  color: #212529;
+  color: var(--bs-emphasis-color);
   letter-spacing: 0.5px;
   margin-bottom: 12px;
 }
@@ -322,4 +396,13 @@ form textarea:focus {
 .site-footer a:hover {
   color: var(--brand-primary);
   text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------
+   13) Dark mode extras
+   The OpenStreetMap iframe is a bright picture we can't recolor, so we
+   just make it a little dimmer in dark mode.
+   -------------------------------------------------------------------- */
+[data-bs-theme="dark"] iframe {
+  filter: brightness(0.85);
 }

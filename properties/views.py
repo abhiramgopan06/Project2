@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal, InvalidOperation
 
-from django.db.models import Q
+from django.db.models import ProtectedError, Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -139,7 +139,19 @@ def property_update(request, pk):
 def property_delete(request, pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     if request.method == "POST":
-        property_obj.delete()
+        try:
+            property_obj.delete()
+        except ProtectedError:
+            # Bookings and maintenance tickets are protected on purpose, so a
+            # property that has them can't be deleted. Without this "try",
+            # Django would show a server error page. Instead we show a
+            # friendly message and go back to the property.
+            messages.error(
+                request,
+                "This property has bookings or maintenance tickets, so it cannot be deleted. "
+                "Edit the property and untick 'Available' to hide it instead.",
+            )
+            return redirect("properties:owner_property_detail", pk=property_obj.pk)
         messages.success(request, "Property deleted successfully.")
         return redirect("properties:owner_property_list")
     return render(request, "properties/property_confirm_delete.html", {"property": property_obj})
@@ -224,7 +236,16 @@ def room_delete(request, pk, room_pk):
     property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
     room = get_object_or_404(Room, pk=room_pk, property=property_obj)
     if request.method == "POST":
-        room.delete()
+        try:
+            room.delete()
+        except ProtectedError:
+            # Same idea as deleting a property: a room with bookings is protected.
+            messages.error(
+                request,
+                "This room has bookings, so it cannot be deleted. "
+                "Edit the room and untick 'Available' to hide it instead.",
+            )
+            return redirect("properties:owner_property_detail", pk=pk)
         messages.success(request, "Room deleted successfully.")
         return redirect("properties:owner_property_detail", pk=pk)
     return render(request, "properties/room_confirm_delete.html", {"property": property_obj, "room": room})

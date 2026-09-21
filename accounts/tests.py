@@ -34,3 +34,17 @@ class AuthenticationTests(TestCase):
         response = self.client.get(reverse("accounts:logout"))
         self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
         self.assertTrue(response.wsgi_request.user.is_authenticated)
+
+    def test_login_goes_back_to_the_page_the_user_came_from(self):
+        response = self.client.post(
+            reverse("accounts:login") + "?next=/properties/",
+            {"username": "tenant1", "password": "StrongPass123!"},
+        )
+        self.assertRedirects(response, "/properties/")
+
+    def test_login_ignores_next_pointing_to_another_website(self):
+        response = self.client.post(
+            reverse("accounts:login") + "?next=https://evil.example.com/",
+            {"username": "tenant1", "password": "StrongPass123!"},
+        )
+        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)

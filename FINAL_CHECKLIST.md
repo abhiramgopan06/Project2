@@ -8,9 +8,9 @@ This project is the final integrated Django version of the Rental Property Manag
 2. Log in and verify role-based dashboard routing.
 3. Owner creates a property, rooms, amenities, and images.
 4. Tenant searches and filters available properties.
-5. Tenant opens a property and submits a rental request.
+5. Tenant opens a property and submits a rental request (move-in date + rental duration in months).
 6. Owner approves/rejects the request.
-7. Approval creates a confirmed booking and updates availability.
+7. Approval creates a confirmed booking (carrying the rental duration and end date) and updates availability.
 8. Tenant makes a mock payment and views the transaction history.
 9. Tenant creates a maintenance ticket from a confirmed booking.
 10. Owner assigns a technician.
@@ -19,6 +19,7 @@ This project is the final integrated Django version of the Rental Property Manag
 13. Users can report problematic properties.
 14. Admin reviews reports and monitors platform activity.
 15. Email notifications are emitted through Django's development console backend.
+16. The moon / sun button in the navbar switches between light and dark mode, and the choice is remembered.
 
 ## Security checks
 
@@ -42,12 +43,19 @@ python manage.py collectstatic --noinput
 
 ## Verified status
 
-All four commands above were re-run before this package was finalized:
+Last verified with Python 3.12 and Django 6.1.1 (after the rental-duration feature,
+the light/dark mode and the bug fixes):
 
-- `check` — System check identified no issues.
-- `makemigrations --check --dry-run` — No changes detected (migrations are up to date).
-- `test` — 8/8 tests pass.
-- `collectstatic` — completes cleanly.
+- `check` - System check identified no issues.
+- `makemigrations --check --dry-run` - No changes detected.
+- `test` - 41 tests pass.
+- `collectstatic` - completes cleanly.
+- Every page was also opened as a visitor, tenant, owner, technician and admin, and the
+  full journey (request with a room and duration, approval, payment, maintenance ticket
+  from start to close, property report) was run end to end.
+
+After copying new project files, run `python manage.py migrate`, then run the commands
+again on your own computer to confirm.
 
 For local development:
 

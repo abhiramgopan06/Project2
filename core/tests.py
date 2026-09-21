@@ -23,3 +23,12 @@ class ReportTests(TestCase):
     def test_anonymous_user_cannot_report(self):
         response = self.client.get(reverse("core:report_property", args=[self.property.pk]))
         self.assertRedirects(response, f"{reverse('accounts:login')}?next={reverse('core:report_property', args=[self.property.pk])}")
+
+
+class ThemeToggleTests(TestCase):
+    def test_home_page_has_theme_toggle_and_script(self):
+        response = self.client.get(reverse("core:home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="theme-toggle"')
+        self.assertContains(response, "js/script.js")
+        self.assertContains(response, 'data-bs-theme="light"')

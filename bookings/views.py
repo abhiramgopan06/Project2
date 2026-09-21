@@ -8,6 +8,7 @@ from django.urls import reverse
 from properties.models import Property, Room
 from .forms import RentalRequestForm
 from .models import Booking, RentalRequest
+from .reminders import rent_reminders_for
 
 
 def tenant_required(request):
@@ -63,7 +64,8 @@ def create_request(request, property_pk):
                 subject=f"New rental request for {property_obj.title}",
                 message=(
                     f"{request.user.get_full_name() or request.user.username} has requested "
-                    f"your property '{property_obj.title}'. Please review it from your owner dashboard."
+                    f"your property '{property_obj.title}' from {rental_request.move_in_date} "
+                    f"for {rental_request.duration_display()}. Please review it from your owner dashboard."
                 ),
                 from_email=None,
                 recipient_list=[property_obj.owner.email],
@@ -92,7 +94,11 @@ def my_bookings(request):
     if blocked:
         return blocked
     bookings = Booking.objects.filter(tenant=request.user).select_related("property", "room", "rental_request")
-    return render(request, "bookings/my_bookings.html", {"bookings": bookings})
+    return render(
+        request,
+        "bookings/my_bookings.html",
+        {"bookings": bookings, "rent_reminders": rent_reminders_for(request.user)},
+    )
 
 
 @login_required
@@ -146,6 +152,7 @@ def approve_request(request, pk):
         property=rental_request.property,
         room=rental_request.room,
         start_date=rental_request.move_in_date,
+        duration_months=rental_request.duration_months,
     )
 
     if rental_request.room:
@@ -159,7 +166,8 @@ def approve_request(request, pk):
         subject=f"Rental request approved - {rental_request.property.title}",
         message=(
             f"Your rental request for '{rental_request.property.title}' has been approved. "
-            f"Booking #{booking.pk} starts on {booking.start_date}."
+            f"Booking #{booking.pk} starts on {booking.start_date} for {booking.duration_display()} "
+            f"(until {booking.end_date()})."
         ),
         from_email=None,
         recipient_list=[rental_request.tenant.email],

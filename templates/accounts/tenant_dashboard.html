@@ -6,6 +6,7 @@
     <div><h1 class="fw-bold mb-1">Tenant Dashboard</h1><p class="text-secondary mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}.</p></div>
     <span class="badge text-bg-success">TENANT</span>
   </div>
+  {% include "bookings/_rent_reminders.html" with show_link=True %}
   <div class="row g-4">
     <div class="col-md-6 col-lg-3"><a href="{% url 'properties:list' %}" class="dashboard-card"><div class="fs-2">🔎</div><h5>Search Properties</h5><p>Find your next rental property.</p></a></div>
     <div class="col-md-6 col-lg-3"><a href="{% url 'bookings:my_requests' %}" class="dashboard-card"><div class="fs-2">📨</div><h5>My Requests</h5><p>Track your rental requests.</p></a></div>

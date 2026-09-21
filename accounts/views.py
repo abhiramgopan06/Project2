@@ -3,6 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
+
+from bookings.reminders import rent_reminders_for
 
 from .forms import ProfileForm, RegistrationForm
 
@@ -43,6 +46,16 @@ def user_login(request):
         if user is not None:
             login(request, user)
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+
+            # If the user was sent to the login page from another page, the URL
+            # looks like /accounts/login/?next=/properties/3/ . After logging in
+            # we send them back there. The safety check makes sure "next" points
+            # to THIS website, so nobody can use it to send users somewhere else.
+            next_url = request.GET.get("next", "")
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+            ):
+                return redirect(next_url)
             return redirect("accounts:dashboard")
 
         messages.error(request, "Invalid username or password.")
@@ -92,7 +105,11 @@ def tenant_dashboard(request):
     if request.user.role != "TENANT":
         messages.error(request, "Access denied. Tenant access is required.")
         return redirect("accounts:dashboard")
-    return render(request, "accounts/tenant_dashboard.html")
+    return render(
+        request,
+        "accounts/tenant_dashboard.html",
+        {"rent_reminders": rent_reminders_for(request.user)},
+    )
 
 
 @login_required

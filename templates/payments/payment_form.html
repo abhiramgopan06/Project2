@@ -12,7 +12,8 @@
         <div class="d-flex justify-content-between mb-2"><span>Property</span><strong>{{ booking.property.title }}</strong></div>
         <div class="d-flex justify-content-between mb-2"><span>Room</span><strong>{% if booking.room %}{{ booking.room.room_number }}{% else %}Entire property{% endif %}</strong></div>
         <div class="d-flex justify-content-between mb-2"><span>Move-in</span><strong>{{ booking.start_date }}</strong></div>
-        <div class="d-flex justify-content-between fs-4 mt-4"><span>Amount</span><strong>₹{{ amount|floatformat:2 }}</strong></div>
+        <div class="d-flex justify-content-between mb-2"><span>Rental period</span><strong>{{ booking.duration_display }} (until {{ booking.end_date }})</strong></div>
+        <div class="d-flex justify-content-between fs-4 mt-4"><span>Monthly rent</span><strong>₹{{ amount|floatformat:2 }}</strong></div>
       </div>
     </div>
     <div class="col-lg-6">
