@@ -5,6 +5,15 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------
+   0) Font
+   Inter is a free Google Font that looks clean at both small and large
+   sizes. If the page can't reach Google Fonts (offline, blocked, etc.)
+   the browser just falls back to the normal system font, so nothing
+   breaks - this line is a nice-to-have, not a requirement.
+   -------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* --------------------------------------------------------------------
    1) Theme colors
    Change these variables to re-color the whole site in one place.
    -------------------------------------------------------------------- */
@@ -57,6 +66,72 @@ body {
   min-height: 100vh;
   background-color: var(--brand-bg);
   color: var(--brand-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* A visible, on-brand outline when someone tabs through the page with a
+   keyboard, instead of the browser's default (which some people turn off
+   without realising it removes an accessibility feature). */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------
+   1b) Dark-mode safety net
+   Bootstrap ships a handful of utility classes - .btn-dark,
+   .btn-outline-dark, .text-dark, .border-dark - whose color is fixed to
+   near-black no matter what theme is active. That's fine in light mode,
+   but in dark mode it means near-black text/borders sitting on a
+   near-black background: technically there, but invisible.
+   Rather than track down every place one of these classes might be used
+   in a template, we re-point them at our theme-aware variables here, in
+   one place, so they always stay readable in both modes.
+   -------------------------------------------------------------------- */
+[data-bs-theme="dark"] .btn-dark {
+  background-color: var(--brand-surface-alt);
+  border-color: var(--brand-card-border);
+  color: var(--brand-text);
+}
+
+[data-bs-theme="dark"] .btn-dark:hover,
+[data-bs-theme="dark"] .btn-dark:focus {
+  background-color: var(--brand-card-border);
+  border-color: var(--brand-card-border);
+  color: var(--brand-text);
+}
+
+[data-bs-theme="dark"] .btn-outline-dark {
+  color: var(--brand-text);
+  border-color: var(--brand-card-border);
+}
+
+[data-bs-theme="dark"] .btn-outline-dark:hover,
+[data-bs-theme="dark"] .btn-outline-dark:focus {
+  background-color: var(--brand-surface-alt);
+  border-color: var(--brand-card-border);
+  color: var(--brand-text);
+}
+
+/* Note: badges are deliberately excluded here. A badge like
+   "bg-warning text-dark" keeps dark text on a bright yellow background on
+   purpose, in both themes, for contrast - that pairing should not change
+   when the rest of the site goes dark. */
+[data-bs-theme="dark"] .text-dark:not(.badge) {
+  color: var(--brand-text) !important;
+}
+
+[data-bs-theme="dark"] .border-dark {
+  border-color: var(--brand-card-border) !important;
 }
 
 /* --------------------------------------------------------------------
@@ -72,21 +147,55 @@ body {
 
 .nav-link {
   transition: color 0.15s ease;
+  position: relative;
+}
+
+/* A small underline that grows in on hover - a subtle "this is
+   clickable" cue that feels more finished than a plain color change. */
+.navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.1rem;
+  height: 2px;
+  background: var(--brand-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.15s ease;
+}
+
+.navbar .nav-link:hover::after {
+  transform: scaleX(1);
 }
 
 /* --------------------------------------------------------------------
    3) Buttons
    Rounded corners and a little "lift" on hover feel more polished
-   without needing any JavaScript.
+   without needing any JavaScript. Every variant below (solid, outline,
+   small, disabled) is covered so buttons look intentional everywhere
+   they're used, not just on the ones we happened to test.
    -------------------------------------------------------------------- */
 .btn {
   border-radius: var(--radius-md);
   font-weight: 500;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
 }
 
 .btn:hover {
   transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled,
+.btn.disabled {
+  transform: none;
+  box-shadow: none;
+  opacity: 0.65;
 }
 
 .btn-primary {
@@ -100,9 +209,37 @@ body {
   border-color: var(--brand-primary-dark);
 }
 
+.btn-outline-primary {
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
 .btn-success {
   background-color: var(--brand-accent);
   border-color: var(--brand-accent);
+}
+
+.btn-outline-secondary,
+.btn-outline-danger,
+.btn-outline-light {
+  font-weight: 500;
+}
+
+/* The two navbar buttons (Logout, the dark-mode toggle) use
+   btn-outline-light on a dark navbar background in *both* themes, so
+   they don't need the dark-mode safety net above - but they do need a
+   clearer hover state than Bootstrap's default gives them. */
+.navbar .btn-outline-light:hover,
+.navbar .btn-outline-light:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
 }
 
 /* --------------------------------------------------------------------
@@ -405,4 +542,53 @@ form textarea:focus {
    -------------------------------------------------------------------- */
 [data-bs-theme="dark"] iframe {
   filter: brightness(0.85);
+}
+
+/* --------------------------------------------------------------------
+   14) Small finishing touches
+   -------------------------------------------------------------------- */
+
+/* A thin, theme-aware scrollbar for the draggable gallery strip on the
+   property detail page (Firefox uses scrollbar-color; Chrome/Edge/Safari
+   use the ::-webkit- rules). Falls back to the browser default anywhere
+   this isn't supported - purely cosmetic. */
+.gallery-strip {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-card-border) transparent;
+}
+
+.gallery-strip::-webkit-scrollbar {
+  height: 6px;
+}
+
+.gallery-strip::-webkit-scrollbar-thumb {
+  background-color: var(--brand-card-border);
+  border-radius: 999px;
+}
+
+/* Empty-state text (e.g. "No bookings yet.") - a little lighter and
+   italic so it reads as a placeholder rather than a normal row. */
+.table td.text-secondary {
+  font-style: italic;
+}
+
+/* Links inside body text (not nav/buttons/footer, which style their own
+   links) get the brand color instead of Bootstrap's default blue, so the
+   whole site feels like one consistent palette. */
+main a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dashboard-card) {
+  color: var(--brand-primary);
+}
+
+main a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dashboard-card):hover {
+  color: var(--brand-primary-dark);
+}
+
+/* Disabled form fields (e.g. a read-only field) should look clearly
+   non-interactive in both themes rather than just slightly greyed out. */
+form input:disabled,
+form select:disabled,
+form textarea:disabled {
+  background-color: var(--brand-surface-alt);
+  color: var(--brand-text-muted);
+  cursor: not-allowed;
 }
