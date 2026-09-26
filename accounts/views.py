@@ -47,7 +47,10 @@ def user_login(request):
             login(request, user)
             messages.success(request, f"Welcome back, {user.first_name or user.username}!")
 
-           
+            # If the user was sent to the login page from another page, the URL
+            # looks like /accounts/login/?next=/properties/3/ . After logging in
+            # we send them back there. The safety check makes sure "next" points
+            # to THIS website, so nobody can use it to send users somewhere else.
             next_url = request.GET.get("next", "")
             if next_url and url_has_allowed_host_and_scheme(
                 next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()

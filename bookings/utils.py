@@ -8,6 +8,7 @@ from datetime import timedelta
 MIN_RENTAL_MONTHS = 1
 MAX_RENTAL_MONTHS = 60
 
+# How many days before the rent is due the tenant gets a reminder.
 REMINDER_DAYS_BEFORE = 5
 
 

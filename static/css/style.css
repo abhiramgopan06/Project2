@@ -145,9 +145,33 @@ button:focus-visible,
   letter-spacing: 0.3px;
 }
 
+/* With this many links (up to a dozen for some roles), the navbar only
+   switches from Bootstrap's default "wrap the row" behaviour to
+   "collapse into a hamburger menu" at the xl breakpoint (see
+   navbar-expand-xl in base.html). That's what stops "Browse Properties"
+   or "My Reports" from breaking into two lines on medium-wide screens -
+   below xl it's a clean vertical menu instead of a squeezed row. */
 .nav-link {
   transition: color 0.15s ease;
   position: relative;
+  white-space: nowrap;
+}
+
+.navbar-nav .nav-link {
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+}
+
+/* A faint vertical divider before the Logout/Register button and the
+   dark-mode toggle, so they read as separate actions from the plain nav
+   links rather than just more items in the same row. Only shown once the
+   nav is a horizontal row (xl and up) - in the collapsed mobile menu a
+   divider line isn't needed. */
+@media (min-width: 1200px) {
+  .navbar .nav-item.ms-xl-2 {
+    padding-left: 0.75rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+  }
 }
 
 /* A small underline that grows in on hover - a subtle "this is

@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Rental Property Management Platform built with Django.">
     <script>
-        
+        // Choose light or dark mode before the page is drawn, so it never flashes.
+        // 1) use the choice saved by the toggle button, otherwise
+        // 2) follow the computer's own light/dark setting.
         (function () {
             var theme = "light";
             try {
@@ -27,14 +29,14 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
-<nav class="navbar navbar-expand-lg bg-dark shadow-sm sticky-top" data-bs-theme="dark">
-    <div class="container">
+<nav class="navbar navbar-expand-xl bg-dark shadow-sm sticky-top" data-bs-theme="dark">
+    <div class="container-xl">
         <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">🏠 Rental Platform</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+            <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
                 <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'properties:list' %}">Browse Properties</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About Us</a></li>
@@ -58,7 +60,7 @@
                     {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'core:my_reports' %}">My Reports</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile' %}">Profile</a></li>
-                    <li class="nav-item ms-lg-2">
+                    <li class="nav-item ms-xl-2">
                         <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
@@ -66,11 +68,11 @@
                     </li>
                 {% else %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
-                    <li class="nav-item"><a class="btn btn-primary btn-sm ms-lg-2" href="{% url 'accounts:register' %}">Register</a></li>
+                    <li class="nav-item"><a class="btn btn-primary btn-sm ms-xl-2" href="{% url 'accounts:register' %}">Register</a></li>
                 {% endif %}
-                <li class="nav-item ms-lg-2">
+                <li class="nav-item ms-xl-2">
                     <button type="button" id="theme-toggle" class="btn btn-outline-light btn-sm" title="Switch to dark mode" aria-label="Switch between light and dark mode">
-                        <i id="theme-icon" class="bi bi-moon-stars-fill"></i><span id="theme-label" class="d-lg-none ms-1">Dark mode</span>
+                        <i id="theme-icon" class="bi bi-moon-stars-fill"></i><span id="theme-label" class="d-xl-none ms-1">Dark mode</span>
                     </button>
                 </li>
             </ul>

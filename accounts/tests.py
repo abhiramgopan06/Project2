@@ -19,7 +19,8 @@ class AuthenticationTests(TestCase):
             "email": "newtenant@example.com", "phone": "9876543210", "role": "TENANT",
             "password1": "StrongPass123!", "password2": "StrongPass123!",
         })
-        
+        # /accounts/dashboard/ itself redirects on to the role-specific
+        # dashboard, so the intermediate hop returns 302, not 200.
         self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
         self.assertTrue(User.objects.filter(username="newtenant").exists())
 
