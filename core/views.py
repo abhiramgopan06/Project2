@@ -7,7 +7,7 @@ from django.urls import reverse
 
 from accounts.models import User
 from bookings.models import Booking, RentalRequest
-from maintenance.models import MaintenanceTicket
+from maintenance.models import MaintenanceTicket, Technician
 from payments.models import Payment
 from properties.models import Property
 from .forms import PropertyReportForm
@@ -125,3 +125,133 @@ def admin_report_update(request, pk):
             messages.success(request, "Report updated and the reporter was notified.")
             return redirect("core:admin_reports")
     return render(request, "core/admin_report_update.html", {"report": report, "statuses": PropertyReport.Status.choices})
+
+
+# ---------------------------------------------------------------------------
+# The views below give the "Platform Controls" buttons on the admin
+# dashboard their own pages, instead of sending the admin to the built-in
+# Django Admin site. Each list page can be filtered, and clicking into a
+# user or a property shows their full history in one place.
+# ---------------------------------------------------------------------------
+
+
+@login_required
+def admin_users(request):
+    if not _admin_only(request):
+        messages.error(request, "Admin access is required.")
+        return redirect("accounts:dashboard")
+    users = User.objects.all().order_by("username")
+    role = request.GET.get("role", "").strip()
+    if role in dict(User.Role.choices):
+        users = users.filter(role=role)
+    return render(request, "core/admin_users.html", {
+        "users": users,
+        "roles": User.Role.choices,
+        "selected_role": role,
+    })
+
+
+@login_required
+def admin_user_detail(request, pk):
+    if not _admin_only(request):
+        messages.error(request, "Admin access is required.")
+        return redirect("accounts:dashboard")
+    tenant = get_object_or_404(User, pk=pk)
+
+    # What history we show depends on the account's role: a tenant's
+    # history is the properties they rented and paid for, while an
+    # owner's "history" is the properties they listed.
+    context = {"tenant": tenant}
+    if tenant.role == User.Role.TENANT:
+        context["rental_requests"] = RentalRequest.objects.filter(tenant=tenant).select_related("property", "room")
+        context["bookings"] = Booking.objects.filter(tenant=tenant).select_related("property", "room")
+        context["payments"] = Payment.objects.filter(tenant=tenant).select_related("booking__property")
+        context["tickets"] = MaintenanceTicket.objects.filter(tenant=tenant).select_related("property")
+    elif tenant.role == User.Role.OWNER:
+        context["owned_properties"] = Property.objects.filter(owner=tenant)
+    elif tenant.role == User.Role.TECHNICIAN:
+        technician = Technician.objects.filter(user=tenant).first()
+        context["technician"] = technician
+        if technician:
+            context["assigned_tickets"] = MaintenanceTicket.objects.filter(technician=technician).select_related("property", "tenant")
+
+    return render(request, "core/admin_user_detail.html", context)
+
+
+@login_required
+def admin_properties(request):
+    if not _admin_only(request):
+        messages.error(request, "Admin access is required.")
+        return redirect("accounts:dashboard")
+    properties = Property.objects.select_related("owner").order_by("-created_at")
+    availability = request.GET.get("available", "").strip()
+    if availability == "yes":
+        properties = properties.filter(available=True)
+    elif availability == "no":
+        properties = properties.filter(available=False)
+    return render(request, "core/admin_properties.html", {
+        "properties": properties,
+        "selected_availability": availability,
+    })
+
+
+@login_required
+def admin_property_detail(request, pk):
+    if not _admin_only(request):
+        messages.error(request, "Admin access is required.")
+        return redirect("accounts:dashboard")
+    property_obj = get_object_or_404(Property.objects.select_related("owner"), pk=pk)
+    return render(request, "core/admin_property_detail.html", {
+        "property": property_obj,
+        "rental_requests": RentalRequest.objects.filter(property=property_obj).select_related("tenant", "room"),
+        "bookings": Booking.objects.filter(property=property_obj).select_related("tenant", "room"),
+        "tickets": MaintenanceTicket.objects.filter(property=property_obj).select_related("tenant"),
+    })
+
+
+@login_required
+def admin_rental_requests(request):
+    if not _admin_only(request):
+        messages.error(request, "Admin access is required.")
+        return redirect("accounts:dashboard")
+    requests_qs = RentalRequest.objects.select_related("tenant", "property", "room")
+    status = request.GET.get("status", "").strip()
+    if status in dict(RentalRequest.Status.choices):
+        requests_qs = requests_qs.filter(status=status)
+    return render(request, "core/admin_rental_requests.html", {
+        "requests": requests_qs,
+        "statuses": RentalRequest.Status.choices,
+        "selected_status": status,
+    })
+
+
+@login_required
+def admin_payments(request):
+    if not _admin_only(request):
+        messages.error(request, "Admin access is required.")
+        return redirect("accounts:dashboard")
+    payments = Payment.objects.select_related("tenant", "booking__property")
+    status = request.GET.get("status", "").strip()
+    if status in dict(Payment.Status.choices):
+        payments = payments.filter(status=status)
+    return render(request, "core/admin_payments.html", {
+        "payments": payments,
+        "statuses": Payment.Status.choices,
+        "selected_status": status,
+    })
+
+
+@login_required
+def admin_maintenance(request):
+    if not _admin_only(request):
+        messages.error(request, "Admin access is required.")
+        return redirect("accounts:dashboard")
+    tickets = MaintenanceTicket.objects.select_related("tenant", "property", "technician")
+    status = request.GET.get("status", "").strip()
+    if status in dict(MaintenanceTicket.Status.choices):
+        tickets = tickets.filter(status=status)
+    return render(request, "core/admin_maintenance.html", {
+        "tickets": tickets,
+        "statuses": MaintenanceTicket.Status.choices,
+        "selected_status": status,
+    })
