@@ -81,3 +81,13 @@ The project uses Django's console email backend. During development, email messa
 ## Mock payments
 
 No real money is processed. Card/CVV values are used for mock validation only. Full card numbers and CVV values are not stored; successful card payments retain only the last four digits.
+
+Email verification and Google sign-in setup
+
+1. Copy .env.example values into your Windows environment variables.
+2. For Gmail OTP email, use a Gmail address with 2-Step Verification and create a Google App Password. Put that App Password in EMAIL_HOST_PASSWORD.
+3. Restart the Django server after setting the email variables.
+4. Registration now creates an inactive account, sends a 6-digit OTP, and opens the verification page. The account becomes active only after the correct OTP is entered.
+5. The verification code expires after 10 minutes. A Resend OTP option is available with a short resend delay.
+6. For Google sign-in, create OAuth 2.0 Web Application credentials in Google Cloud Console. Add http://127.0.0.1:8000/accounts/google/callback/ as an authorized redirect URI, then set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.
+7. Google sign-in uses the verified Google email. A new Google account is created as a Tenant; an existing account with the same email is signed in.

@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from django.core import mail
+from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -172,7 +173,7 @@ class BookingDurationTests(RentalDurationTestBase):
         self.assertTrue(any("1 year" in message.body for message in mail.outbox))
 
     def test_existing_records_default_to_one_month(self):
-        # Rows created before the duration feature (see migration 0002) get 1 month.
+                                                                                    
         self.assertEqual(Booking._meta.get_field("duration_months").default, 1)
         self.assertEqual(RentalRequest._meta.get_field("duration_months").default, 1)
 
@@ -202,3 +203,21 @@ class DurationPagesTests(RentalDurationTestBase):
         self.assertContains(response, "6 months")
         response = self.client.get(reverse("payments:make_payment", args=[booking.pk]))
         self.assertContains(response, "6 months")
+
+
+class RoleRestrictionTests(RentalDurationTestBase):
+    def test_owner_cannot_open_rental_request_page(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("bookings:create_request", args=[self.property.pk]))
+        self.assertRedirects(response, reverse("accounts:dashboard"))
+
+    def test_admin_cannot_open_rental_request_page(self):
+        admin = User.objects.create_user(username="platformadmin", email="admin@example.com", password="AdminPass123", role=User.Role.ADMIN)
+        self.client.force_login(admin)
+        response = self.client.get(reverse("bookings:create_request", args=[self.property.pk]))
+        self.assertRedirects(response, reverse("accounts:dashboard"))
+
+    def test_owner_cannot_be_saved_as_rental_tenant(self):
+        request = RentalRequest(tenant=self.owner, property=self.property, move_in_date=self.move_in)
+        with self.assertRaises(ValidationError):
+            request.full_clean()

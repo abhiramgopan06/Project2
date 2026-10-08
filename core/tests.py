@@ -1,5 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
+
+from bookings.models import Booking, RentalRequest
 
 from accounts.models import User
 from properties.models import Property
@@ -15,10 +19,58 @@ class ReportTests(TestCase):
             number_of_rooms=1, rent=10000, available=True,
         )
 
-    def test_tenant_can_open_report_form(self):
+    def make_active_booking(self):
+        start = timezone.localdate() - timedelta(days=10)
+        rental_request = RentalRequest.objects.create(
+            tenant=self.tenant, property=self.property, move_in_date=start, duration_months=1,
+        )
+        return Booking.objects.create(
+            rental_request=rental_request, tenant=self.tenant, property=self.property,
+            start_date=start, duration_months=1, status=Booking.Status.CONFIRMED,
+        )
+
+    def test_tenant_with_active_booking_can_open_report_form(self):
+        self.make_active_booking()
         self.client.force_login(self.tenant)
         response = self.client.get(reverse("core:report_property", args=[self.property.pk]))
         self.assertEqual(response.status_code, 200)
+
+    def test_tenant_without_booking_is_blocked(self):
+        self.client.force_login(self.tenant)
+        response = self.client.get(reverse("core:report_property", args=[self.property.pk]))
+        self.assertRedirects(response, reverse("properties:detail", args=[self.property.pk]))
+        self.assertEqual(response.wsgi_request._messages._queued_messages[0].message,
+                         "You cannot report this property because you do not have an active rental booking for it. Only the tenant currently renting the property can submit a report.")
+
+    def test_owner_is_blocked_from_reporting(self):
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("core:report_property", args=[self.property.pk]))
+        self.assertRedirects(response, reverse("properties:detail", args=[self.property.pk]))
+
+    def test_expired_booking_is_not_allowed_to_report(self):
+        start = timezone.localdate() - timedelta(days=90)
+        rental_request = RentalRequest.objects.create(
+            tenant=self.tenant, property=self.property, move_in_date=start, duration_months=1,
+        )
+        Booking.objects.create(
+            rental_request=rental_request, tenant=self.tenant, property=self.property,
+            start_date=start, duration_months=1, status=Booking.Status.CONFIRMED,
+        )
+        self.client.force_login(self.tenant)
+        response = self.client.get(reverse("core:report_property", args=[self.property.pk]))
+        self.assertRedirects(response, reverse("properties:detail", args=[self.property.pk]))
+
+    def test_short_report_description_is_rejected(self):
+        self.make_active_booking()
+        self.client.force_login(self.tenant)
+        response = self.client.post(
+            reverse("core:report_property", args=[self.property.pk]),
+            {"reason": "SCAM", "description": "Looks bad"},
+        )
+        self.assertEqual(response.status_code, 200)
+        from .models import PropertyReport
+        self.assertFalse(PropertyReport.objects.exists())
+        self.assertContains(response, "at least 20 characters")
 
     def test_anonymous_user_cannot_report(self):
         response = self.client.get(reverse("core:report_property", args=[self.property.pk]))

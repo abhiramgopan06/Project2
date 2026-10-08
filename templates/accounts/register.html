@@ -1,55 +1,38 @@
 {% extends "base.html" %}
-
 {% block title %}Register | Rental Platform{% endblock %}
-
 {% block content %}
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-7 col-xl-6">
-
-      <div class="card border-0 shadow-sm">
-        <div class="card-body p-4 p-md-5">
-
-          <h2 class="fw-bold">Create your account</h2>
-          <p class="text-secondary">Choose whether you are a property owner or tenant.</p>
-
-          <form method="post" novalidate>
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-              <div class="alert alert-danger">
-                {{ form.non_field_errors }}
-              </div>
-            {% endif %}
-
-            {% for field in form %}
-              <div class="mb-3">
-                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
-                  {{ field.label }}
-                </label>
-
-                {{ field }}
-
-                {% if field.help_text %}
-                  <div class="form-text">{{ field.help_text|safe }}</div>
-                {% endif %}
-
-                {% for error in field.errors %}
-                  <div class="text-danger small mt-1">{{ error }}</div>
+<div class="auth-page py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="auth-card card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <div class="auth-heading text-center mb-4">
+              <div class="auth-icon"><i class="bi bi-person-plus"></i></div>
+              <h2 class="fw-bold mb-2">Create your account</h2>
+              <p class="text-secondary mb-0">Register with your email to receive a verification code.</p>
+            </div>
+            <form method="post" novalidate>
+              {% csrf_token %}
+              {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+              <div class="row">
+                {% for field in form %}
+                <div class="{% if field.name == 'username' or field.name == 'email' or field.name == 'role' or 'password' in field.name %}col-12{% else %}col-md-6{% endif %} mb-3">
+                  <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+                  {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                </div>
                 {% endfor %}
               </div>
-            {% endfor %}
-
-            <button class="btn btn-primary w-100" type="submit">Create Account</button>
-          </form>
-
-          <p class="text-center mt-4 mb-0">
-            Already have an account? <a href="{% url 'accounts:login' %}">Login</a>
-          </p>
-
+              <button class="btn btn-primary w-100 auth-submit" type="submit"><i class="bi bi-envelope-check me-2"></i>Register &amp; Verify Email</button>
+            </form>
+            <p class="text-center mt-4 mb-0">Already have an account? <a href="{% url 'accounts:login' %}">Login</a></p>
+            <div class="auth-divider"><span>or</span></div>
+            <a class="btn google-btn w-100" href="{% url 'accounts:google_login' %}"><i class="bi bi-google me-2"></i>Continue with Google</a>
+          </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>

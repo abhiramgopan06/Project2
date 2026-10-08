@@ -1,4 +1,4 @@
-# Generated manually for the rental platform Step 6 payment system.
+                                                                   
 from django.conf import settings
 from django.db import migrations, models
 import django.core.validators

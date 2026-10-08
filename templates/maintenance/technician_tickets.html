@@ -1,6 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Technician Dashboard{% endblock %}
+{% block title %}Technician Dashboard | Rental Platform{% endblock %}
 {% block content %}
-<div class="container py-5"><h1>👨‍🔧 Technician Dashboard</h1><p class="text-muted">Your assigned maintenance tickets.</p><div class="row g-4 mt-2">
-{% for ticket in tickets %}<div class="col-md-6"><div class="card shadow-sm h-100 ticket-card priority-{{ ticket.priority|lower }}"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><h5 class="mb-0">#{{ ticket.pk }} {{ ticket.title }}</h5><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></div><p>{{ ticket.property.title }}{% if ticket.room %} · Room {{ ticket.room.room_number }}{% endif %}</p><p>{{ ticket.description|truncatechars:150 }}</p>{% if ticket.status == 'ASSIGNED' %}<form method="post" action="{% url 'maintenance:start_ticket' ticket.pk %}" class="d-inline">{% csrf_token %}<button type="submit" class="btn btn-primary">Start Work</button></form>{% elif ticket.status == 'IN_PROGRESS' %}<a class="btn btn-success" href="{% url 'maintenance:resolve_ticket' ticket.pk %}">Resolve Issue</a>{% endif %} <a class="btn btn-outline-secondary" href="{% url 'maintenance:ticket_detail' ticket.pk %}">Details</a></div></div></div>{% empty %}<div class="alert alert-info">No assigned tickets.</div>{% endfor %}</div></div>
+<div class="container py-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h1 class="fw-bold mb-1">Technician Dashboard</h1><p class="text-secondary mb-0">Hello {{ request.user.first_name|default:request.user.username }}. Here are the tenant requests assigned to you.</p></div>
+    <div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{% url 'maintenance:technician_account' %}">Edit My Login</a><span class="badge text-bg-primary align-self-center">TECHNICIAN</span></div>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="dashboard-stat-card"><div class="stat-icon">📋</div><div><div class="stat-value">{{ stats.assigned }}</div><div class="stat-label">New Assigned</div></div></div></div>
+    <div class="col-md-4"><div class="dashboard-stat-card"><div class="stat-icon">🔧</div><div><div class="stat-value">{{ stats.in_progress }}</div><div class="stat-label">In Progress</div></div></div></div>
+    <div class="col-md-4"><div class="dashboard-stat-card"><div class="stat-icon">✅</div><div><div class="stat-value">{{ stats.resolved }}</div><div class="stat-label">Resolved</div></div></div></div>
+  </div>
+  <div class="card border-0 shadow-sm mb-4"><div class="card-body"><div class="row g-3"><div class="col-md-4"><strong>Technician</strong><div>{{ technician.name }}</div></div><div class="col-md-4"><strong>Username</strong><div>{{ technician.user.username }}</div></div><div class="col-md-4"><strong>Specialization</strong><div>{{ technician.specialization|default:"General" }}</div></div></div><p class="small text-secondary mt-3 mb-0">Your property owner created this account. You can change your username or password yourself from <strong>Edit My Login</strong>; the owner will be notified.</p></div></div>
+  <h3 class="fw-bold mb-3">Tenant Maintenance Requests</h3>
+  <div class="row g-4">
+    {% for ticket in tickets %}
+      <div class="col-md-6"><div class="card shadow-sm h-100 ticket-card priority-{{ ticket.priority|lower }}"><div class="card-body">
+        <div class="d-flex justify-content-between align-items-center gap-2"><h5 class="mb-0">#{{ ticket.pk }} {{ ticket.title }}</h5><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></div>
+        <p class="text-secondary mb-2"><strong>Tenant:</strong> {{ ticket.tenant.get_full_name|default:ticket.tenant.username }}</p>
+        <p class="mb-2"><strong>Property:</strong> {{ ticket.property.title }}{% if ticket.room %} · Room {{ ticket.room.room_number }}{% endif %}</p>
+        <p class="mb-2"><strong>Problem:</strong> {{ ticket.description|truncatechars:220 }}</p>
+        <span class="badge {% if ticket.priority == 'EMERGENCY' or ticket.priority == 'HIGH' %}bg-danger{% elif ticket.priority == 'MEDIUM' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ ticket.get_priority_display }} priority</span>
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          {% if ticket.status == 'ASSIGNED' %}<form method="post" action="{% url 'maintenance:start_ticket' ticket.pk %}">{% csrf_token %}<button type="submit" class="btn btn-primary">Start Work</button></form>{% elif ticket.status == 'IN_PROGRESS' %}<a class="btn btn-success" href="{% url 'maintenance:resolve_ticket' ticket.pk %}">Resolve Issue</a>{% endif %}
+          <a class="btn btn-outline-secondary" href="{% url 'maintenance:ticket_detail' ticket.pk %}">View Details & Messages</a>
+        </div>
+      </div></div></div>
+    {% empty %}<div class="col-12"><div class="empty-state-card text-center py-5"><div class="fs-1">🛠️</div><h4>No requests assigned</h4><p class="text-secondary mb-0">New tenant maintenance requests will appear here after the property owner assigns them to you.</p></div></div>{% endfor %}
+  </div>
+</div>
 {% endblock %}

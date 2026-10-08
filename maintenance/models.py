@@ -80,6 +80,8 @@ class MaintenanceTicket(models.Model):
         ordering = ["-created_at"]
 
     def clean(self):
+        if self.tenant_id and self.tenant.role != "TENANT":
+            raise ValidationError("Only tenants can create maintenance requests.")
         if self.booking_id:
             if self.booking.tenant_id != self.tenant_id:
                 raise ValidationError("The booking does not belong to this tenant.")
@@ -91,6 +93,8 @@ class MaintenanceTicket(models.Model):
             raise ValidationError("The selected room does not belong to this property.")
         if self.technician_id and self.technician.owner_id != self.property.owner_id:
             raise ValidationError("The technician must belong to the property owner.")
+        if self.technician_id and not self.technician.available:
+            raise ValidationError("The selected technician is currently unavailable.")
 
     def mark_resolved(self):
         self.status = self.Status.RESOLVED
@@ -104,3 +108,32 @@ class MaintenanceTicket(models.Model):
 
     def __str__(self):
         return f"Ticket #{self.pk} - {self.title}"
+
+
+class MaintenanceMessage(models.Model):
+    """Simple conversation between the tenant and assigned technician."""
+    ticket = models.ForeignKey(MaintenanceTicket, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="maintenance_messages")
+    message = models.TextField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Message #{self.pk} on ticket #{self.ticket_id}"
+
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="maintenance_notifications")
+    title = models.CharField(max_length=150)
+    message = models.TextField(max_length=500)
+    link = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Notification for {self.recipient.username}: {self.title}"

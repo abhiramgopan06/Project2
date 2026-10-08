@@ -1,13 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Login | Rental Platform{% endblock %}
 {% block content %}
-<div class="container py-5"><div class="row justify-content-center"><div class="col-md-6 col-lg-5">
-<div class="card border-0 shadow-sm"><div class="card-body p-4 p-md-5">
-<h2 class="fw-bold">Welcome back</h2><p class="text-secondary">Sign in to continue.</p>
-<form method="post">{% csrf_token %}
-<div class="mb-3"><label class="form-label">Username</label><input class="form-control" type="text" name="username" required autofocus></div>
-<div class="mb-3"><label class="form-label">Password</label><input class="form-control" type="password" name="password" required></div>
-<button class="btn btn-primary w-100" type="submit">Login</button></form>
-<p class="text-center mt-4 mb-0">Don't have an account? <a href="{% url 'accounts:register' %}">Register</a></p>
-</div></div></div></div></div>
+<div class="auth-page py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="auth-card card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <div class="auth-heading text-center mb-4">
+              <div class="auth-icon"><i class="bi bi-box-arrow-in-right"></i></div>
+              <h2 class="fw-bold mb-2">Welcome back</h2>
+              <p class="text-secondary mb-0">Sign in to continue to your account.</p>
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Username</label>
+                <input class="form-control" type="text" name="username" autocomplete="username" required autofocus>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Password</label>
+                <input class="form-control" type="password" name="password" autocomplete="current-password" required>
+              </div>
+              <button class="btn btn-primary w-100 auth-submit" type="submit"><i class="bi bi-box-arrow-in-right me-2"></i>Login</button>
+            </form>
+            <p class="text-center mt-4 mb-0">Don't have an account? <a href="{% url 'accounts:register' %}">Register</a></p>
+            <div class="auth-divider"><span>or</span></div>
+            <a class="btn google-btn w-100" href="{% url 'accounts:google_login' %}"><i class="bi bi-google me-2"></i>Continue with Google</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,22 +1,9 @@
-/* ==========================================================================
-   Rental Platform - custom styles
-   This file sits on top of Bootstrap. It is plain CSS (no build tools),
-   organised with comments so it is easy to find and change things.
-   ========================================================================== */
 
-/* --------------------------------------------------------------------
-   0) Font
-   Inter is a free Google Font that looks clean at both small and large
-   sizes. If the page can't reach Google Fonts (offline, blocked, etc.)
-   the browser just falls back to the normal system font, so nothing
-   breaks - this line is a nice-to-have, not a requirement.
-   -------------------------------------------------------------------- */
+
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* --------------------------------------------------------------------
-   1) Theme colors
-   Change these variables to re-color the whole site in one place.
-   -------------------------------------------------------------------- */
+
 :root {
   --brand-primary: #2f6feb;
   --brand-primary-dark: #244fb0;
@@ -27,8 +14,8 @@
   --brand-card-border: #e7ebf1;
   --brand-text: #1f2937;
   --brand-text-muted: #6b7280;
-  --brand-surface: #ffffff;       /* cards, stat boxes */
-  --brand-surface-alt: #eef2f8;   /* table headers, image placeholders */
+  --brand-surface: #ffffff;       
+  --brand-surface-alt: #eef2f8;   
   --brand-hero-start: #eaf1ff;
   --brand-hero-middle: #f5faff;
   --brand-hero-end: #ffffff;
@@ -38,14 +25,7 @@
   --shadow-hover: 0 10px 24px rgba(17, 24, 39, 0.12);
 }
 
-/* --------------------------------------------------------------------
-   Dark mode
-   base.html puts data-bs-theme="dark" on the <html> tag when dark mode
-   is on. This block simply replaces the colors above with dark ones, so
-   every rule that uses var(--brand-...) changes automatically.
-   The two --bs-body-bg lines re-color Bootstrap's own cards, inputs and
-   tables so they match the rest of our dark palette.
-   -------------------------------------------------------------------- */
+
 [data-bs-theme="dark"] {
   --bs-body-bg: #171d27;
   --bs-body-bg-rgb: 23, 29, 39;
@@ -74,9 +54,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
 }
 
-/* A visible, on-brand outline when someone tabs through the page with a
-   keyboard, instead of the browser's default (which some people turn off
-   without realising it removes an accessibility feature). */
+
 a:focus-visible,
 button:focus-visible,
 .btn:focus-visible,
@@ -86,17 +64,7 @@ button:focus-visible,
   outline-offset: 2px;
 }
 
-/* --------------------------------------------------------------------
-   1b) Dark-mode safety net
-   Bootstrap ships a handful of utility classes - .btn-dark,
-   .btn-outline-dark, .text-dark, .border-dark - whose color is fixed to
-   near-black no matter what theme is active. That's fine in light mode,
-   but in dark mode it means near-black text/borders sitting on a
-   near-black background: technically there, but invisible.
-   Rather than track down every place one of these classes might be used
-   in a template, we re-point them at our theme-aware variables here, in
-   one place, so they always stay readable in both modes.
-   -------------------------------------------------------------------- */
+
 [data-bs-theme="dark"] .btn-dark {
   background-color: var(--brand-surface-alt);
   border-color: var(--brand-card-border);
@@ -122,10 +90,7 @@ button:focus-visible,
   color: var(--brand-text);
 }
 
-/* Note: badges are deliberately excluded here. A badge like
-   "bg-warning text-dark" keeps dark text on a bright yellow background on
-   purpose, in both themes, for contrast - that pairing should not change
-   when the rest of the site goes dark. */
+
 [data-bs-theme="dark"] .text-dark:not(.badge) {
   color: var(--brand-text) !important;
 }
@@ -134,9 +99,7 @@ button:focus-visible,
   border-color: var(--brand-card-border) !important;
 }
 
-/* --------------------------------------------------------------------
-   2) Navbar
-   -------------------------------------------------------------------- */
+
 .navbar {
   background: linear-gradient(90deg, #10151f, #1c2536) !important;
 }
@@ -145,12 +108,119 @@ button:focus-visible,
   letter-spacing: 0.3px;
 }
 
-/* With this many links (up to a dozen for some roles), the navbar only
-   switches from Bootstrap's default "wrap the row" behaviour to
-   "collapse into a hamburger menu" at the xl breakpoint (see
-   navbar-expand-xl in base.html). That's what stops "Browse Properties"
-   or "My Reports" from breaking into two lines on medium-wide screens -
-   below xl it's a clean vertical menu instead of a squeezed row. */
+.site-navbar {
+  min-height: 68px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 1rem;
+}
+
+.navbar .navbar-brand {
+  margin-right: 1rem;
+  font-size: 1.05rem;
+}
+
+.navbar-nav .nav-item {
+  position: relative;
+}
+
+.navbar-nav .nav-link {
+  margin: 0.15rem 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.55rem;
+  color: rgba(255, 255, 255, 0.70);
+}
+
+.navbar-nav .nav-link::after {
+  display: none;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.navbar-nav .nav-link.active {
+  color: #fff;
+  background: rgba(47, 111, 235, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(47, 111, 235, 0.32);
+}
+
+.navbar .dropdown-toggle::after {
+  margin-left: 0.45rem;
+  vertical-align: 0.15em;
+}
+
+.navbar .dropdown-menu {
+  min-width: 210px;
+  margin-top: 0.45rem;
+  padding: 0.45rem;
+  border: 1px solid var(--brand-card-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-hover);
+  background: var(--brand-surface);
+}
+
+.navbar .dropdown-header {
+  color: var(--brand-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.navbar .dropdown-item {
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  color: var(--brand-text);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background: var(--brand-surface-alt);
+  color: var(--brand-text);
+}
+
+.navbar .nav-action {
+  margin-left: 0.35rem;
+  padding-left: 0.65rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+@media (min-width: 1200px) {
+  .navbar .nav-action + .nav-action {
+    margin-left: 0;
+    padding-left: 0.35rem;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .navbar-collapse {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.8rem;
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .navbar .nav-action {
+    margin: 0.35rem 0 0;
+    padding: 0.55rem 0 0;
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+}
+
+
 .nav-link {
   transition: color 0.15s ease;
   position: relative;
@@ -162,11 +232,7 @@ button:focus-visible,
   padding-right: 0.7rem;
 }
 
-/* A faint vertical divider before the Logout/Register button and the
-   dark-mode toggle, so they read as separate actions from the plain nav
-   links rather than just more items in the same row. Only shown once the
-   nav is a horizontal row (xl and up) - in the collapsed mobile menu a
-   divider line isn't needed. */
+
 @media (min-width: 1200px) {
   .navbar .nav-item.ms-xl-2 {
     padding-left: 0.75rem;
@@ -174,8 +240,7 @@ button:focus-visible,
   }
 }
 
-/* A small underline that grows in on hover - a subtle "this is
-   clickable" cue that feels more finished than a plain color change. */
+
 .navbar .nav-link::after {
   content: "";
   position: absolute;
@@ -193,13 +258,7 @@ button:focus-visible,
   transform: scaleX(1);
 }
 
-/* --------------------------------------------------------------------
-   3) Buttons
-   Rounded corners and a little "lift" on hover feel more polished
-   without needing any JavaScript. Every variant below (solid, outline,
-   small, disabled) is covered so buttons look intentional everywhere
-   they're used, not just on the ones we happened to test.
-   -------------------------------------------------------------------- */
+
 .btn {
   border-radius: var(--radius-md);
   font-weight: 500;
@@ -238,10 +297,19 @@ button:focus-visible,
   border-color: var(--brand-primary);
 }
 
-.btn-outline-primary:hover,
-.btn-outline-primary:focus {
+.btn-outline-primary:hover {
   background-color: var(--brand-primary);
   border-color: var(--brand-primary);
+  color: #fff;
+}
+
+
+.btn-outline-primary:focus,
+.btn-outline-primary:focus-visible {
+  color: var(--brand-primary);
+  background-color: transparent;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 0.2rem rgba(47, 111, 235, 0.18);
 }
 
 .btn-success {
@@ -255,10 +323,7 @@ button:focus-visible,
   font-weight: 500;
 }
 
-/* The two navbar buttons (Logout, the dark-mode toggle) use
-   btn-outline-light on a dark navbar background in *both* themes, so
-   they don't need the dark-mode safety net above - but they do need a
-   clearer hover state than Bootstrap's default gives them. */
+
 .navbar .btn-outline-light:hover,
 .navbar .btn-outline-light:focus {
   background-color: rgba(255, 255, 255, 0.15);
@@ -266,11 +331,7 @@ button:focus-visible,
   color: #fff;
 }
 
-/* --------------------------------------------------------------------
-   4) Cards
-   Most of the site (dashboards, property listings, tickets) is built
-   from Bootstrap cards, so a shared card style ties everything together.
-   -------------------------------------------------------------------- */
+
 .card {
   border-radius: var(--radius-lg);
   border: 1px solid var(--brand-card-border);
@@ -282,17 +343,13 @@ button:focus-visible,
   box-shadow: var(--shadow-hover);
 }
 
-/* --------------------------------------------------------------------
-   5) Hero section (home page)
-   -------------------------------------------------------------------- */
+
 .hero {
   background: linear-gradient(135deg, var(--brand-hero-start) 0%, var(--brand-hero-middle) 60%, var(--brand-hero-end) 100%);
   border-bottom: 1px solid var(--brand-card-border);
 }
 
-/* --------------------------------------------------------------------
-   6) Stat / dashboard cards
-   -------------------------------------------------------------------- */
+
 .stat-card,
 .dashboard-card {
   height: 100%;
@@ -322,9 +379,7 @@ button:focus-visible,
   transform: translateY(-2px);
 }
 
-/* --------------------------------------------------------------------
-   7) Profile avatar
-   -------------------------------------------------------------------- */
+
 .profile-avatar {
   width: 72px;
   height: 72px;
@@ -342,12 +397,7 @@ button:focus-visible,
   font-weight: bold;
 }
 
-/* --------------------------------------------------------------------
-   8) Form fields
-   Plain <input>/<select>/<textarea> tags (e.g. from {{ form.as_p }})
-   get this shared look so every form on the site matches, even ones
-   that don't set Bootstrap classes explicitly.
-   -------------------------------------------------------------------- */
+
 form input,
 form select,
 form textarea {
@@ -382,9 +432,7 @@ form textarea:focus {
   box-shadow: 0 0 0 3px rgba(47, 111, 235, 0.15);
 }
 
-/* --------------------------------------------------------------------
-   9) Property cards
-   -------------------------------------------------------------------- */
+
 .property-card {
   border: 1px solid var(--brand-card-border);
 }
@@ -412,7 +460,7 @@ form textarea:focus {
   object-fit: cover;
 }
 
-/* Property image gallery (property detail page) */
+
 .gallery-main {
   width: 100%;
   height: 420px;
@@ -424,7 +472,7 @@ form textarea:focus {
   gap: 12px;
   overflow-x: auto;
   padding-bottom: 8px;
-  cursor: grab;            /* hand icon: you can drag this row */
+  cursor: grab;            
   user-select: none;
 }
 
@@ -433,7 +481,7 @@ form textarea:focus {
 }
 
 .gallery-thumb {
-  flex: 0 0 auto;          /* keep every picture the same size in the row */
+  flex: 0 0 auto;          
   width: 160px;
   height: 110px;
   object-fit: cover;
@@ -492,9 +540,7 @@ form textarea:focus {
   border-bottom: none;
 }
 
-/* --------------------------------------------------------------------
-   10) Tables (used a lot on the owner + admin ticket/report screens)
-   -------------------------------------------------------------------- */
+
 .table {
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -508,10 +554,7 @@ form textarea:focus {
   --bs-table-bg: var(--brand-surface-alt);
 }
 
-/* --------------------------------------------------------------------
-   11) Maintenance / technician screens
-   A small splash of color so tickets are easy to scan at a glance.
-   -------------------------------------------------------------------- */
+
 .ticket-card {
   border-left: 4px solid var(--brand-primary);
 }
@@ -535,9 +578,7 @@ form textarea:focus {
   padding: 0.4em 0.75em;
 }
 
-/* --------------------------------------------------------------------
-   12) Footer
-   -------------------------------------------------------------------- */
+
 .site-footer h6 {
   color: var(--bs-emphasis-color);
   letter-spacing: 0.5px;
@@ -559,23 +600,14 @@ form textarea:focus {
   text-decoration: underline;
 }
 
-/* --------------------------------------------------------------------
-   13) Dark mode extras
-   The OpenStreetMap iframe is a bright picture we can't recolor, so we
-   just make it a little dimmer in dark mode.
-   -------------------------------------------------------------------- */
+
 [data-bs-theme="dark"] iframe {
   filter: brightness(0.85);
 }
 
-/* --------------------------------------------------------------------
-   14) Small finishing touches
-   -------------------------------------------------------------------- */
 
-/* A thin, theme-aware scrollbar for the draggable gallery strip on the
-   property detail page (Firefox uses scrollbar-color; Chrome/Edge/Safari
-   use the ::-webkit- rules). Falls back to the browser default anywhere
-   this isn't supported - purely cosmetic. */
+
+
 .gallery-strip {
   scrollbar-width: thin;
   scrollbar-color: var(--brand-card-border) transparent;
@@ -590,15 +622,12 @@ form textarea:focus {
   border-radius: 999px;
 }
 
-/* Empty-state text (e.g. "No bookings yet.") - a little lighter and
-   italic so it reads as a placeholder rather than a normal row. */
+
 .table td.text-secondary {
   font-style: italic;
 }
 
-/* Links inside body text (not nav/buttons/footer, which style their own
-   links) get the brand color instead of Bootstrap's default blue, so the
-   whole site feels like one consistent palette. */
+
 main a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dashboard-card) {
   color: var(--brand-primary);
 }
@@ -607,12 +636,214 @@ main a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dashboard-card):hover {
   color: var(--brand-primary-dark);
 }
 
-/* Disabled form fields (e.g. a read-only field) should look clearly
-   non-interactive in both themes rather than just slightly greyed out. */
+
 form input:disabled,
 form select:disabled,
 form textarea:disabled {
   background-color: var(--brand-surface-alt);
   color: var(--brand-text-muted);
   cursor: not-allowed;
+}
+
+
+.btn-report-property {
+  color: #fff;
+  border: 1px solid var(--brand-warning);
+  background-color: var(--brand-warning);
+  box-shadow: none;
+}
+
+.btn-report-property:hover {
+  color: #fff;
+  border-color: var(--brand-danger);
+  background-color: var(--brand-danger);
+}
+
+.btn-report-property:focus {
+  color: #fff;
+  border-color: var(--brand-warning);
+  background-color: var(--brand-warning);
+  box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.25);
+}
+
+.btn-report-property:focus:not(:hover) {
+  transform: none;
+}
+
+.report-badge {
+  color: var(--brand-warning);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+[data-bs-theme="dark"] .report-form-card {
+  background-color: var(--brand-surface);
+  border: 1px solid var(--brand-card-border) !important;
+}
+
+[data-bs-theme="dark"] .btn-report-property {
+  color: #fff;
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+[data-bs-theme="dark"] .btn-report-property:hover {
+  color: #fff;
+  background-color: var(--brand-danger);
+  border-color: var(--brand-danger);
+}
+
+[data-bs-theme="dark"] .btn-report-property:focus {
+  color: #fff;
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.25);
+}
+
+
+.gallery-main {
+  width: 90%;
+  height: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .gallery-main {
+    width: 94%;
+    height: 360px;
+  }
+}
+
+@media (max-width: 576px) {
+  .gallery-main {
+    width: 100%;
+    height: 280px;
+  }
+}
+
+
+.technician-login-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.12);
+  font-size: 1.8rem;
+}
+
+.dashboard-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 105px;
+  padding: 20px;
+  border: 1px solid var(--brand-card-border);
+  border-radius: 16px;
+  background: var(--brand-surface);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+
+.stat-icon { font-size: 1.7rem; }
+.stat-value { font-size: 1.65rem; font-weight: 700; line-height: 1; }
+.stat-label { color: var(--brand-text-muted); margin-top: 5px; }
+
+.empty-state-card {
+  border: 1px dashed var(--brand-card-border);
+  border-radius: 16px;
+  background: var(--brand-surface);
+}
+
+[data-bs-theme="dark"] .dashboard-stat-card,
+[data-bs-theme="dark"] .empty-state-card {
+  box-shadow: none;
+}
+
+
+.notification-item { background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); }
+.conversation-box { max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: .75rem; }
+.conversation-message { padding: .75rem 1rem; border-radius: 12px; background: var(--bs-tertiary-bg); border: 1px solid var(--bs-border-color); }
+.conversation-message.mine { border-left: 4px solid var(--bs-primary); }
+@media (max-width: 767.98px) {
+  .conversation-box { max-height: 360px; }
+  .technician-card-actions .btn { width: 100%; }
+}
+
+.auth-page {
+  min-height: 72vh;
+  display: flex;
+  align-items: center;
+}
+
+.auth-card {
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-card-border) !important;
+  border-radius: 1.15rem;
+}
+
+.auth-heading .auth-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  color: #fff;
+  background: var(--brand-primary);
+  font-size: 1.4rem;
+}
+
+.auth-submit {
+  min-height: 48px;
+  font-weight: 700;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  color: var(--brand-text-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--brand-card-border);
+}
+
+.google-btn {
+  min-height: 46px;
+  border: 1px solid var(--brand-card-border);
+  background: var(--brand-surface);
+  color: var(--brand-text);
+  font-weight: 600;
+}
+
+.google-btn:hover {
+  background: var(--brand-surface-alt);
+  color: var(--brand-text);
+  border-color: var(--brand-primary);
+}
+
+.otp-input {
+  letter-spacing: 0.35rem;
+  font-weight: 700;
+}
+
+@media (max-width: 576px) {
+  .auth-page {
+    min-height: auto;
+  }
+
+  .auth-card .card-body {
+    padding: 1.35rem !important;
+  }
 }

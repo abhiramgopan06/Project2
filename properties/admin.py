@@ -21,6 +21,15 @@ class PropertyAdmin(admin.ModelAdmin):
     filter_horizontal = ("amenities",)
     inlines = [PropertyImageInline, RoomInline]
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(PropertyImage)
 class PropertyImageAdmin(admin.ModelAdmin):

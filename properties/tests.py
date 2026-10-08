@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 
@@ -35,8 +36,8 @@ class PropertyAuthorizationTests(TestCase):
     def test_tenant_cannot_open_owner_property_list(self):
         self.client.force_login(self.tenant)
         response = self.client.get(reverse("properties:owner_property_list"))
-        # /accounts/dashboard/ redirects on again to the role-specific
-        # dashboard, so the intermediate hop returns 302, not 200.
+                                                                      
+                                                                  
         self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
 
 
@@ -115,3 +116,12 @@ class PropertyDeleteProtectionTests(TestCase):
         response = self.client.post(reverse("properties:delete", args=[empty.pk]))
         self.assertRedirects(response, reverse("properties:owner_property_list"))
         self.assertFalse(Property.objects.filter(pk=empty.pk).exists())
+
+
+class PropertyRoleTests(TestCase):
+    def test_only_owner_can_list_property(self):
+        from accounts.models import User
+        tenant = User.objects.create_user(username="tenant_role", email="tenant_role@example.com", password="Pass12345", role=User.Role.TENANT)
+        property_obj = Property(owner=tenant, title="Test Home", description="A test property", property_type=Property.PropertyType.HOUSE, location="Kochi", address="Test Road", rent=10000)
+        with self.assertRaises(ValidationError):
+            property_obj.full_clean()

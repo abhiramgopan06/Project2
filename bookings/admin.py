@@ -9,6 +9,15 @@ class RentalRequestAdmin(admin.ModelAdmin):
     search_fields = ("tenant__username", "tenant__email", "property__title")
     list_select_related = ("tenant", "property", "room")
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
@@ -16,3 +25,12 @@ class BookingAdmin(admin.ModelAdmin):
     list_filter = ("status", "created_at")
     search_fields = ("tenant__username", "tenant__email", "property__title")
     list_select_related = ("tenant", "property", "room")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

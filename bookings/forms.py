@@ -26,11 +26,11 @@ class RentalRequestForm(forms.ModelForm):
             f"How many months do you want to rent for? ({MIN_RENTAL_MONTHS}-{MAX_RENTAL_MONTHS})"
         )
         if property_obj is not None:
-            # Tell the form which property this request is for BEFORE it checks
-            # anything. The model's clean() compares the chosen room with the
-            # property. Without this line the property was still empty at that
-            # moment, so every room a tenant picked was wrongly rejected with
-            # "The selected room does not belong to this property."
+                                                                               
+                                                                             
+                                                                              
+                                                                             
+                                                                   
             self.instance.property = property_obj
             self.fields["room"].queryset = property_obj.rooms.filter(available=True)
             self.fields["room"].required = False

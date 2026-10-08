@@ -1,5 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}Create Technician Account{% endblock %}
 {% block content %}
-<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-7"><div class="card shadow-sm"><div class="card-body p-4"><h2>{{ title }}</h2><p class="text-muted">This creates a technician account they can use to log in.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Create Technician</button></form></div></div></div></div></div>
+<div class="container py-5"><div class="row justify-content-center"><div class="col-lg-7"><div class="card shadow-sm border-0"><div class="card-body p-4 p-md-5">
+<h1 class="fw-bold mb-2">Create Technician Account</h1>
+<p class="text-secondary">Create the technician's login once, then give the username and password directly to the technician.</p>
+<div class="alert alert-info"><strong>Important:</strong> After this account is created, you cannot edit its username or password. The technician can change those details from their own account.</div>
+<form method="post" class="row g-3">{% csrf_token %}
+{% for field in form %}<div class="col-md-6">{{ field.label_tag }}{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}</div>{% endfor %}
+<div class="col-12 d-flex flex-wrap gap-2 mt-3"><button class="btn btn-primary">Create Account</button><a href="{% url 'maintenance:technicians' %}" class="btn btn-outline-secondary">Cancel</a></div>
+</form></div></div></div></div></div>
 {% endblock %}

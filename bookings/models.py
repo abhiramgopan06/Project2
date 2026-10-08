@@ -34,6 +34,8 @@ class RentalRequest(models.Model):
         ordering = ["-created_at"]
 
     def clean(self):
+        if self.tenant_id and self.tenant.role != "TENANT":
+            raise ValidationError("Only tenant accounts can request a property for rent.")
         if self.tenant_id and self.property_id and self.property.owner_id == self.tenant_id:
             raise ValidationError("A property owner cannot request their own property.")
         if self.room_id and self.room.property_id != self.property_id:
@@ -41,9 +43,9 @@ class RentalRequest(models.Model):
         if self.move_in_date and self.move_in_date < timezone.localdate():
             raise ValidationError("Move-in date cannot be in the past.")
 
-    # These are normal methods (not @property) on purpose: this model has a
-    # field called "property", which hides Python's own @property inside the
-    # class. Templates can still write {{ item.end_date }} - they call it for you.
+                                                                           
+                                                                            
+                                                                                  
     def end_date(self):
         return lease_end_date(self.move_in_date, self.duration_months)
 
@@ -77,7 +79,15 @@ class Booking(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
-    # Normal methods, not @property - see the note in RentalRequest above.
+    def clean(self):
+        if self.tenant_id and self.tenant.role != "TENANT":
+            raise ValidationError("Only tenant accounts can have rental bookings.")
+        if self.property_id and self.property.owner.role != "OWNER":
+            raise ValidationError("A rental property must belong to a property owner.")
+        if self.room_id and self.room.property_id != self.property_id:
+            raise ValidationError("The selected room does not belong to this property.")
+
+                                                                          
     def end_date(self):
         return lease_end_date(self.start_date, self.duration_months)
 

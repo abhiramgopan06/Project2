@@ -60,6 +60,11 @@ class Property(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
+    def clean(self):
+        if self.owner_id and self.owner.role != "OWNER":
+            from django.core.exceptions import ValidationError
+            raise ValidationError("Only property owner accounts can list properties for rent.")
+
     def __str__(self):
         return self.title
 

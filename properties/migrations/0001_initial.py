@@ -1,4 +1,4 @@
-# Generated manually for Step 3 property management.
+                                                    
 from django.conf import settings
 from django.db import migrations, models
 import django.core.validators

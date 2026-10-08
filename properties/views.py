@@ -142,10 +142,10 @@ def property_delete(request, pk):
         try:
             property_obj.delete()
         except ProtectedError:
-            # Bookings and maintenance tickets are protected on purpose, so a
-            # property that has them can't be deleted. Without this "try",
-            # Django would show a server error page. Instead we show a
-            # friendly message and go back to the property.
+                                                                             
+                                                                          
+                                                                      
+                                                           
             messages.error(
                 request,
                 "This property has bookings or maintenance tickets, so it cannot be deleted. "
@@ -239,7 +239,7 @@ def room_delete(request, pk, room_pk):
         try:
             room.delete()
         except ProtectedError:
-            # Same idea as deleting a property: a room with bookings is protected.
+                                                                                  
             messages.error(
                 request,
                 "This room has bookings, so it cannot be deleted. "

@@ -4,6 +4,7 @@ from django.core.mail import send_mail
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
 from accounts.models import User
 from bookings.models import Booking, RentalRequest
@@ -19,8 +20,13 @@ def home(request):
     return render(request, "home.html", {"featured_properties": featured})
 
 
+@login_required
 def about(request):
-    # simple about us page, no database data needed
+                                                                      
+                                                        
+    if request.user.role != User.Role.TENANT:
+        messages.info(request, "The About Us page is available to tenants only.")
+        return redirect("accounts:dashboard")
     return render(request, "core/about.html")
 
 
@@ -28,16 +34,45 @@ def _admin_only(request):
     return request.user.is_authenticated and (request.user.is_superuser or request.user.role == User.Role.ADMIN)
 
 
+def _has_active_rental(user, property_obj):
+    """Return True only when the user is currently renting this property."""
+    if not user.is_authenticated or user.role != User.Role.TENANT:
+        return False
+
+    today = timezone.localdate()
+    bookings = Booking.objects.filter(
+        tenant=user,
+        property=property_obj,
+        status=Booking.Status.CONFIRMED,
+        start_date__lte=today,
+    )
+    return any(booking.end_date() and booking.end_date() >= today for booking in bookings)
+
+
 @login_required
 def report_property(request, pk):
-    if request.user.role not in {User.Role.TENANT, User.Role.OWNER}:
-        messages.error(request, "Only registered users can report a property.")
-        return redirect("properties:detail", pk=pk)
     property_obj = get_object_or_404(Property, pk=pk)
-    existing = PropertyReport.objects.filter(property=property_obj, reporter=request.user, status__in=[PropertyReport.Status.OPEN, PropertyReport.Status.REVIEWING]).exists()
+
+                                                                      
+                                                                         
+                                                                             
+    if not _has_active_rental(request.user, property_obj):
+        messages.warning(
+            request,
+            "You cannot report this property because you do not have an active rental booking for it. "
+            "Only the tenant currently renting the property can submit a report."
+        )
+        return redirect("properties:detail", pk=pk)
+
+    existing = PropertyReport.objects.filter(
+        property=property_obj,
+        reporter=request.user,
+        status__in=[PropertyReport.Status.OPEN, PropertyReport.Status.REVIEWING],
+    ).exists()
     if existing:
         messages.info(request, "You already have an active report for this property.")
         return redirect("properties:detail", pk=pk)
+
     if request.method == "POST":
         form = PropertyReportForm(request.POST)
         if form.is_valid():
@@ -127,12 +162,12 @@ def admin_report_update(request, pk):
     return render(request, "core/admin_report_update.html", {"report": report, "statuses": PropertyReport.Status.choices})
 
 
-# ---------------------------------------------------------------------------
-# The views below give the "Platform Controls" buttons on the admin
-# dashboard their own pages, instead of sending the admin to the built-in
-# Django Admin site. Each list page can be filtered, and clicking into a
-# user or a property shows their full history in one place.
-# ---------------------------------------------------------------------------
+                                                                             
+                                                                   
+                                                                         
+                                                                        
+                                                           
+                                                                             
 
 
 @login_required
@@ -158,9 +193,9 @@ def admin_user_detail(request, pk):
         return redirect("accounts:dashboard")
     tenant = get_object_or_404(User, pk=pk)
 
-    # What history we show depends on the account's role: a tenant's
-    # history is the properties they rented and paid for, while an
-    # owner's "history" is the properties they listed.
+                                                                    
+                                                                  
+                                                      
     context = {"tenant": tenant}
     if tenant.role == User.Role.TENANT:
         context["rental_requests"] = RentalRequest.objects.filter(tenant=tenant).select_related("property", "room")

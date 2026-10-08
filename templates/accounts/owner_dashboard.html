@@ -6,6 +6,8 @@
     <div><h1 class="fw-bold mb-1">Owner Dashboard</h1><p class="text-secondary mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}.</p></div>
     <span class="badge text-bg-primary">PROPERTY OWNER</span>
   </div>
+
+{% if notifications %}<div class="card border-0 shadow-sm mb-4"><div class="card-body"><h5 class="fw-bold">🔔 Notifications</h5>{% for note in notifications %}<div class="notification-item p-3 rounded mb-2"><div class="d-flex justify-content-between gap-3"><div><strong>{{ note.title }}</strong><p class="mb-1">{{ note.message }}</p><small class="text-secondary">{{ note.created_at|date:"d M Y, h:i A" }}</small></div><form method="post" action="{% url 'maintenance:mark_notification_read' note.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'accounts:owner_dashboard' %}"><button class="btn btn-sm btn-outline-secondary">Mark read</button></form></div></div>{% endfor %}</div></div>{% endif %}
   <div class="row g-4">
     <div class="col-md-6 col-lg-4"><a href="{% url 'properties:owner_property_list' %}" class="dashboard-card"><div class="fs-2">🏠</div><h5>My Properties</h5><p>Add, edit and manage your properties.</p></a></div>
     <div class="col-md-6 col-lg-4"><a href="{% url 'properties:create' %}" class="dashboard-card"><div class="fs-2">➕</div><h5>Add Property</h5><p>Create a new rental listing.</p></a></div>

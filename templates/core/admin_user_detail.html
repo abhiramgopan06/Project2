@@ -12,9 +12,7 @@
   </div>
 
   {% if tenant.role == 'TENANT' %}
-  <!-- A tenant's "history" is everything they've done as a renter: what
-       they asked for, what they were given, what they paid, and what
-       they reported broken. -->
+  
   <div class="card border-0 shadow-sm mb-4"><div class="card-body p-4">
     <h4 class="fw-bold mb-3">Rental Requests</h4>
     <div class="table-responsive"><table class="table align-middle mb-0">
@@ -89,8 +87,7 @@
   </div></div>
 
   {% elif tenant.role == 'OWNER' %}
-  <!-- An owner's history is the properties they've listed. Click one to
-       see everyone who has rented (or tried to rent) it. -->
+  
   <div class="card border-0 shadow-sm"><div class="card-body p-4">
     <h4 class="fw-bold mb-3">Properties Listed</h4>
     <div class="table-responsive"><table class="table align-middle mb-0">
@@ -111,7 +108,7 @@
   </div></div>
 
   {% elif tenant.role == 'TECHNICIAN' %}
-  <!-- A technician's history is the repair tickets they've been assigned. -->
+  
   <div class="card border-0 shadow-sm"><div class="card-body p-4">
     <h4 class="fw-bold mb-3">Assigned Maintenance Tickets</h4>
     {% if not technician %}
