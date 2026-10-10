@@ -10,8 +10,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.mail import send_mail
+from django.db.models import Q
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
@@ -28,27 +30,87 @@ MAX_OTP_ATTEMPTS = 5
 
 
 def _new_otp():
+    """Make a random 6-digit code (uses `secrets`, which is safe for security codes)."""
     return f"{secrets.randbelow(900000) + 100000:06d}"
 
 
-def _send_otp(user, request):
+def _mask_email(email):
+    """john.doe@gmail.com -> jo****e@gmail.com (shown on the OTP page)."""
+    name, _, domain = email.partition("@")
+    if len(name) <= 2:
+        return f"{name[0]}***@{domain}" if name else email
+    return f"{name[:2]}{'*' * (len(name) - 3)}{name[-1]}@{domain}"
+
+
+def _send_otp(user):
+    """Create a new OTP for the user, save only its hash, and email the real code."""
     now = timezone.now()
     code = _new_otp()
-    verification, _ = EmailVerification.objects.get_or_create(user=user)
-    verification.otp_hash = make_password(code)
-    verification.expires_at = now + timedelta(minutes=OTP_EXPIRY_MINUTES)
-    verification.attempts = 0
-    verification.verified = False
-    verification.last_sent_at = now
-    verification.save()
+    # update_or_create fills in every required column. (get_or_create(user=user) alone
+    # would try to insert an empty row and the database would reject it.)
+    EmailVerification.objects.update_or_create(
+        user=user,
+        defaults={
+            "otp_hash": make_password(code),
+            "expires_at": now + timedelta(minutes=OTP_EXPIRY_MINUTES),
+            "attempts": 0,
+            "verified": False,
+            "last_sent_at": now,
+        },
+    )
+    name = user.first_name or user.username
+    text_body = (
+        f"Hello {name},\n\n"
+        f"Your Rental Platform verification code is: {code}\n\n"
+        f"It expires in {OTP_EXPIRY_MINUTES} minutes. If you did not create an account, you can ignore this email.\n\n"
+        "- Rental Platform"
+    )
+    html_body = render_to_string("accounts/email/otp_email.html", {
+        "name": name, "code": code, "minutes": OTP_EXPIRY_MINUTES,
+    })
     send_mail(
         "Your Rental Platform verification code",
-        f"Hello {user.first_name or user.username}, your Rental Platform verification code is {code}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
+        text_body,
         settings.DEFAULT_FROM_EMAIL,
         [user.email],
+        html_message=html_body,
         fail_silently=False,
     )
-    request.session["otp_sent_at"] = now.isoformat()
+
+
+def _remove_pending_registrations(username="", email=""):
+    """Delete accounts that registered but never verified, so the same username/email can be reused.
+
+    Only users who are inactive AND have an unverified OTP record are removed.
+    Accounts that an admin disabled never have that record, so they are safe.
+    """
+    pending = User.objects.filter(is_active=False, email_verification__verified=False)
+    query = Q(pk__in=[])
+    if username:
+        query |= Q(username__iexact=username)
+    if email:
+        query |= Q(email__iexact=email)
+    pending.filter(query).delete()
+
+
+def _verify_context(user, verification, **extra):
+    """Everything the OTP page needs to draw itself."""
+    now = timezone.now()
+    wait = 0
+    if verification.last_sent_at:
+        wait = max(0, int(OTP_RESEND_SECONDS - (now - verification.last_sent_at).total_seconds()))
+    context = {
+        "email": user.email,
+        "masked_email": _mask_email(user.email),
+        "resend_wait": wait,
+        "attempts_left": max(0, MAX_OTP_ATTEMPTS - verification.attempts),
+        "locked": verification.attempts >= MAX_OTP_ATTEMPTS,
+        "expired": now > verification.expires_at,
+        "expiry_minutes": OTP_EXPIRY_MINUTES,
+        "console_email": settings.EMAIL_BACKEND.endswith("console.EmailBackend"),
+    }
+    context.update(extra)
+    return context
 
 
 def register(request):
@@ -56,23 +118,24 @@ def register(request):
         return redirect("accounts:dashboard")
 
     if request.method == "POST":
+        # Clear out an earlier unfinished sign-up that used the same username/email.
+        _remove_pending_registrations(
+            username=request.POST.get("username", "").strip(),
+            email=request.POST.get("email", "").strip().lower(),
+        )
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data["email"]
-            existing = User.objects.filter(email__iexact=email).first()
-            if existing and not existing.is_active:
-                existing.delete()
             user = form.save(commit=False)
-            user.is_active = False
+            user.is_active = False  # stays locked until the OTP is confirmed
             user.save()
             try:
-                _send_otp(user, request)
+                _send_otp(user)
             except Exception:
                 user.delete()
-                messages.error(request, "We could not send the verification email. Check the email settings and try again.")
+                messages.error(request, "We could not send the verification email. Please check the email address and try again.")
                 return render(request, "accounts/register.html", {"form": form})
             request.session["pending_verification_user_id"] = user.pk
-            messages.success(request, f"A verification code was sent to {user.email}.")
+            messages.success(request, f"We sent a 6-digit code to {user.email}.")
             return redirect("accounts:verify_email")
     else:
         form = RegistrationForm()
@@ -86,7 +149,7 @@ def verify_email(request):
 
     user_id = request.session.get("pending_verification_user_id")
     if not user_id:
-        messages.info(request, "Please register first.")
+        messages.info(request, "Please create an account first.")
         return redirect("accounts:register")
 
     try:
@@ -98,31 +161,32 @@ def verify_email(request):
         return redirect("accounts:register")
 
     if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "resend":
-            now = timezone.now()
-            if verification.last_sent_at and (now - verification.last_sent_at).total_seconds() < OTP_RESEND_SECONDS:
-                messages.warning(request, "Please wait a few seconds before requesting another code.")
+        # ---- "Resend OTP" button ----
+        if request.POST.get("action") == "resend":
+            seconds_since = (timezone.now() - verification.last_sent_at).total_seconds()
+            if seconds_since < OTP_RESEND_SECONDS:
+                messages.warning(request, "Please wait a few seconds before asking for another code.")
             else:
                 try:
-                    _send_otp(user, request)
-                    messages.success(request, "A new verification code has been sent.")
+                    _send_otp(user)
+                    messages.success(request, f"A new code was sent to {user.email}.")
                 except Exception:
-                    messages.error(request, "We could not send a new verification code. Please try again.")
+                    messages.error(request, "We could not send a new code. Please try again.")
             return redirect("accounts:verify_email")
 
+        # ---- "Verify" button ----
         code = "".join(request.POST.get("otp", "").split())
         if not code.isdigit() or len(code) != OTP_LENGTH:
-            messages.error(request, "Enter the 6-digit verification code.")
-            return render(request, "accounts/verify_email.html", {"email": user.email})
+            messages.error(request, "Enter the 6-digit code from your email.")
+            return redirect("accounts:verify_email")
 
         if verification.attempts >= MAX_OTP_ATTEMPTS:
-            messages.error(request, "Too many incorrect attempts. Please send a new code.")
-            return render(request, "accounts/verify_email.html", {"email": user.email, "locked": True})
+            messages.error(request, "Too many wrong attempts. Please request a new code.")
+            return redirect("accounts:verify_email")
 
         if timezone.now() > verification.expires_at:
-            messages.error(request, "This code has expired. Please send a new code.")
-            return render(request, "accounts/verify_email.html", {"email": user.email, "expired": True})
+            messages.error(request, "This code has expired. Please request a new one.")
+            return redirect("accounts:verify_email")
 
         verification.attempts += 1
         if check_password(code, verification.otp_hash):
@@ -131,14 +195,19 @@ def verify_email(request):
             user.is_active = True
             user.save(update_fields=["is_active"])
             request.session.pop("pending_verification_user_id", None)
-            request.session.pop("otp_sent_at", None)
-            messages.success(request, "Email verified successfully. You can now log in with your registered account.")
+            request.session["verified_username"] = user.username
+            messages.success(request, "Email verified! You can now log in with your username and password.")
             return redirect("accounts:login")
 
         verification.save(update_fields=["attempts"])
-        messages.error(request, "The verification code is incorrect. Please try again or resend a new code.")
+        left = MAX_OTP_ATTEMPTS - verification.attempts
+        if left > 0:
+            messages.error(request, f"That code is not correct. You have {left} attempt{'s' if left != 1 else ''} left.")
+        else:
+            messages.error(request, "That code is not correct. Please request a new code.")
+        return redirect("accounts:verify_email")
 
-    return render(request, "accounts/verify_email.html", {"email": user.email, "locked": verification.attempts >= MAX_OTP_ATTEMPTS})
+    return render(request, "accounts/verify_email.html", _verify_context(user, verification))
 
 
 def _google_configured():
@@ -149,7 +218,7 @@ def google_login(request):
     if request.user.is_authenticated:
         return redirect("accounts:dashboard")
     if not _google_configured():
-        messages.info(request, "Google sign-in needs Google OAuth credentials in the project settings.")
+        messages.warning(request, "Google sign-in is not set up yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to the .env file (see AUTH_SETUP.md).")
         return redirect("accounts:login")
     state = secrets.token_urlsafe(32)
     request.session["google_oauth_state"] = state
@@ -229,6 +298,14 @@ def google_callback(request):
         user.save(update_fields=["password"])
 
     if not user.is_active:
+        # Google has confirmed this email, so a sign-up that was still waiting for its OTP can be finished.
+        # An account that an admin switched off must stay switched off.
+        waiting = EmailVerification.objects.filter(user=user, verified=False).first()
+        if waiting is None:
+            messages.error(request, "This account is disabled. Please contact support.")
+            return redirect("accounts:login")
+        waiting.verified = True
+        waiting.save(update_fields=["verified"])
         user.is_active = True
         user.save(update_fields=["is_active"])
     login(request, user)
@@ -240,9 +317,13 @@ def user_login(request):
     if request.user.is_authenticated:
         return redirect("accounts:dashboard")
 
+    # After a successful OTP we remember the username so the box is already filled in.
+    prefill_username = request.session.pop("verified_username", "")
+
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
+        prefill_username = username
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
@@ -251,9 +332,18 @@ def user_login(request):
             if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
                 return redirect(next_url)
             return redirect("accounts:dashboard")
-        messages.error(request, "Invalid username or password. Verify your email first if you just registered.")
 
-    return render(request, "accounts/login.html")
+        # Right password but email not verified yet? Send them back to the OTP page.
+        waiting = User.objects.filter(
+            username__iexact=username, is_active=False, email_verification__verified=False
+        ).first()
+        if waiting and waiting.check_password(password):
+            request.session["pending_verification_user_id"] = waiting.pk
+            messages.info(request, "Your email is not verified yet. Enter the code we sent you, or request a new one.")
+            return redirect("accounts:verify_email")
+        messages.error(request, "Invalid username or password.")
+
+    return render(request, "accounts/login.html", {"prefill_username": prefill_username})
 
 
 def technician_login(request):

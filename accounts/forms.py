@@ -21,9 +21,30 @@ class RegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["role"].choices = [
-            (User.Role.TENANT, "Tenant"),
-            (User.Role.OWNER, "Property Owner"),
+            (User.Role.TENANT, "Tenant - I want to rent a property"),
+            (User.Role.OWNER, "Property Owner - I want to list properties"),
         ]
+        self.fields["role"].label = "I am a"
+        self.fields["email"].required = True
+        self.fields["phone"].required = False
+
+        # Bootstrap classes, placeholders and browser autofill hints
+        hints = {
+            "username": ("Choose a username", "username"),
+            "first_name": ("First name", "given-name"),
+            "last_name": ("Last name", "family-name"),
+            "email": ("you@gmail.com", "email"),
+            "phone": ("Mobile number (optional)", "tel"),
+            "password1": ("Create a password", "new-password"),
+            "password2": ("Repeat the password", "new-password"),
+        }
+        for name, field in self.fields.items():
+            field.widget.attrs["class"] = "form-select" if name == "role" else "form-control"
+            if name in hints:
+                field.widget.attrs["placeholder"], field.widget.attrs["autocomplete"] = hints[name]
+        self.fields["email"].help_text = "We will email a 6-digit verification code to this address."
+        self.fields["password1"].help_text = "At least 8 characters. Avoid common passwords."
+        self.fields["password2"].help_text = ""
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()

@@ -847,3 +847,106 @@ form textarea:disabled {
     padding: 1.35rem !important;
   }
 }
+
+/* ---------- Professional login / register / OTP pages ---------- */
+.auth-card {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .auth-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+.auth-input .input-group-text,
+.auth-input .btn-toggle-password {
+  background: var(--brand-surface-alt);
+  border-color: var(--bs-border-color);
+  color: var(--brand-text-muted);
+}
+
+.auth-input .form-control {
+  min-height: 46px;
+}
+
+.auth-input .form-control:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.18);
+}
+
+.btn-toggle-password:hover {
+  color: var(--brand-text);
+  background: var(--brand-surface-alt);
+}
+
+#id_username.form-control,
+.auth-card .form-control,
+.auth-card .form-select {
+  min-height: 46px;
+}
+
+.google-btn {
+  border-radius: 0.5rem;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.google-btn:hover {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+.auth-steps {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.auth-steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--brand-text-muted);
+}
+
+.auth-steps li + li::before {
+  content: "";
+  width: 22px;
+  height: 2px;
+  margin-right: 0.35rem;
+  background: var(--brand-card-border);
+}
+
+.auth-steps .dot {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--brand-card-border);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.auth-steps li.current { color: var(--brand-text); font-weight: 600; }
+.auth-steps li.current .dot { background: var(--bs-primary); border-color: var(--bs-primary); color: #fff; }
+.auth-steps li.done .dot { background: #198754; border-color: #198754; color: #fff; }
+
+.otp-input {
+  letter-spacing: 0.6rem;
+  font-weight: 700;
+  font-size: 1.6rem;
+  padding-left: 1.2rem;
+}
+
+.resend-box button:disabled {
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+@media (max-width: 576px) {
+  .auth-steps .txt { display: none; }
+  .auth-steps li.current .txt { display: inline; }
+}

@@ -209,13 +209,13 @@ class RoleRestrictionTests(RentalDurationTestBase):
     def test_owner_cannot_open_rental_request_page(self):
         self.client.force_login(self.owner)
         response = self.client.get(reverse("bookings:create_request", args=[self.property.pk]))
-        self.assertRedirects(response, reverse("accounts:dashboard"))
+        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
 
     def test_admin_cannot_open_rental_request_page(self):
         admin = User.objects.create_user(username="platformadmin", email="admin@example.com", password="AdminPass123", role=User.Role.ADMIN)
         self.client.force_login(admin)
         response = self.client.get(reverse("bookings:create_request", args=[self.property.pk]))
-        self.assertRedirects(response, reverse("accounts:dashboard"))
+        self.assertRedirects(response, reverse("accounts:dashboard"), target_status_code=302)
 
     def test_owner_cannot_be_saved_as_rental_tenant(self):
         request = RentalRequest(tenant=self.owner, property=self.property, move_in_date=self.move_in)

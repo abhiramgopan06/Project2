@@ -6,6 +6,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 5000);
     });
 
+    // Show / hide password buttons (login and register pages)
+    document.querySelectorAll("[data-toggle-password]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const input = document.getElementById(button.dataset.togglePassword);
+            if (!input) return;
+            const show = input.type === "password";
+            input.type = show ? "text" : "password";
+            button.querySelector("i").className = show ? "bi bi-eye-slash" : "bi bi-eye";
+        });
+    });
+
     const themeButton = document.getElementById("theme-toggle");
     const themeIcon = document.getElementById("theme-icon");
     const themeLabel = document.getElementById("theme-label");

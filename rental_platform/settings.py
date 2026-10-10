@@ -3,6 +3,26 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _load_env_file():
+    """Read simple KEY=VALUE lines from a file named .env in the project folder.
+
+    This lets you keep email / Google settings in one file instead of typing
+    them in the terminal every time. Real environment variables still win.
+    """
+    env_file = BASE_DIR / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_env_file()
+
 SECRET_KEY = "django-insecure-development-key-change-in-production"
 DEBUG = True
 ALLOWED_HOSTS = []
