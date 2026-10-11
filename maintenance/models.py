@@ -62,6 +62,7 @@ class MaintenanceTicket(models.Model):
         IN_PROGRESS = "IN_PROGRESS", "In Progress"
         RESOLVED = "RESOLVED", "Resolved"
         CLOSED = "CLOSED", "Closed"
+        REJECTED = "REJECTED", "Rejected by Technician"
 
     tenant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="maintenance_tickets")
     property = models.ForeignKey(Property, on_delete=models.PROTECT, related_name="maintenance_tickets")
@@ -140,3 +141,19 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.recipient.username}: {self.title}"
+
+
+class TechnicianReport(models.Model):
+    """A concern raised by a technician for administrator review."""
+    technician = models.ForeignKey(Technician, on_delete=models.CASCADE, related_name="reports")
+    ticket = models.ForeignKey(MaintenanceTicket, on_delete=models.SET_NULL, null=True, blank=True, related_name="technician_reports")
+    subject = models.CharField(max_length=180)
+    description = models.TextField(max_length=2000)
+    status = models.CharField(max_length=20, choices=[("OPEN", "Open"), ("REVIEWING", "Reviewing"), ("RESOLVED", "Resolved")], default="OPEN")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Technician report #{self.pk}: {self.subject}"

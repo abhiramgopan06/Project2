@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from accounts.models import User
 from bookings.models import Booking, RentalRequest
-from maintenance.models import MaintenanceTicket, Technician
+from maintenance.models import MaintenanceTicket, Technician, TechnicianReport
 from payments.models import Payment
 from properties.models import Property
 from .forms import PropertyReportForm
@@ -287,6 +287,7 @@ def admin_maintenance(request):
         tickets = tickets.filter(status=status)
     return render(request, "core/admin_maintenance.html", {
         "tickets": tickets,
+        "technician_reports": TechnicianReport.objects.select_related("technician", "ticket", "technician__user"),
         "statuses": MaintenanceTicket.Status.choices,
         "selected_status": status,
     })

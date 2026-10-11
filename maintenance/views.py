@@ -16,7 +16,7 @@ from .forms import (
     TechnicianEditForm,
     TechnicianForm,
 )
-from .models import MaintenanceMessage, MaintenanceTicket, Notification, Technician
+from .models import MaintenanceMessage, MaintenanceTicket, Notification, Technician, TechnicianReport
 
 
 def _email(subject, message, recipient):
@@ -228,7 +228,7 @@ def technician_tickets(request):
     if request.user.role != "TECHNICIAN":
         messages.error(request, "Only technicians can access this dashboard.")
         return redirect("accounts:dashboard")
-    tickets = MaintenanceTicket.objects.filter(technician__user=request.user).exclude(status=MaintenanceTicket.Status.CLOSED).select_related("property", "room", "tenant")
+    tickets = MaintenanceTicket.objects.filter(technician__user=request.user, status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.IN_PROGRESS, MaintenanceTicket.Status.RESOLVED]).select_related("property", "room", "tenant")
     stats = {
         "assigned": tickets.filter(status=MaintenanceTicket.Status.ASSIGNED).count(),
         "in_progress": tickets.filter(status=MaintenanceTicket.Status.IN_PROGRESS).count(),
@@ -237,6 +237,78 @@ def technician_tickets(request):
     technician = Technician.objects.select_related("user", "owner").get(user=request.user)
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)[:5]
     return render(request, "maintenance/technician_tickets.html", {"tickets": tickets, "stats": stats, "technician": technician, "notifications": notifications})
+
+
+@login_required
+def accept_ticket(request, pk):
+    if request.user.role != "TECHNICIAN" or request.method != "POST":
+        return redirect("maintenance:technician_tickets")
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician__user=request.user, status=MaintenanceTicket.Status.ASSIGNED)
+    ticket.status = MaintenanceTicket.Status.IN_PROGRESS
+    ticket.save(update_fields=["status", "updated_at"])
+    _notify(ticket.tenant, "Technician accepted your request", f"The technician accepted ticket #{ticket.pk}. You can message them for details.", reverse("maintenance:ticket_detail", args=[ticket.pk]))
+    messages.success(request, "You accepted the job.")
+    return redirect("maintenance:technician_tickets")
+
+
+@login_required
+def reject_ticket(request, pk):
+    if request.user.role != "TECHNICIAN" or request.method != "POST":
+        return redirect("maintenance:technician_tickets")
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician__user=request.user, status=MaintenanceTicket.Status.ASSIGNED)
+    ticket.status = MaintenanceTicket.Status.REJECTED
+    ticket.save(update_fields=["status", "updated_at"])
+    _notify(ticket.tenant, "Technician declined your request", f"The technician declined ticket #{ticket.pk}. The property owner can assign another technician.", reverse("maintenance:ticket_detail", args=[ticket.pk]))
+    _notify(ticket.property.owner, "Technician declined a job", f"Technician {ticket.technician.name} declined ticket #{ticket.pk}. Please assign another technician.", reverse("maintenance:owner_tickets"))
+    messages.info(request, "You declined the job. The property owner has been notified.")
+    return redirect("maintenance:technician_tickets")
+
+
+@login_required
+def technician_history(request):
+    if request.user.role != "TECHNICIAN":
+        return redirect("accounts:dashboard")
+    tickets = MaintenanceTicket.objects.filter(technician__user=request.user, status__in=[MaintenanceTicket.Status.RESOLVED, MaintenanceTicket.Status.CLOSED, MaintenanceTicket.Status.REJECTED]).select_related("tenant", "property", "room")
+    return render(request, "maintenance/technician_history.html", {"tickets": tickets})
+
+
+@login_required
+def tenant_finish_ticket(request, pk):
+    if request.user.role != "TENANT" or request.method != "POST":
+        return redirect("maintenance:tenant_tickets")
+    ticket = get_object_or_404(MaintenanceTicket, pk=pk, tenant=request.user, status=MaintenanceTicket.Status.RESOLVED)
+    ticket.mark_closed()
+    _notify(ticket.technician.user, "Tenant confirmed work completion", f"The tenant confirmed ticket #{ticket.pk} is finished.", reverse("maintenance:technician_history"))
+    _notify(ticket.property.owner, "Maintenance work completed", f"Tenant confirmed ticket #{ticket.pk} is finished.", reverse("maintenance:owner_tickets"))
+    messages.success(request, "Work marked as finished. Thank you for confirming.")
+    return redirect("maintenance:tenant_tickets")
+
+
+@login_required
+def technician_report(request):
+    if request.user.role != "TECHNICIAN":
+        messages.error(request, "Only technicians can submit reports.")
+        return redirect("accounts:dashboard")
+    from django import forms
+    class ReportForm(forms.Form):
+        ticket = forms.ModelChoiceField(queryset=MaintenanceTicket.objects.none(), required=False)
+        subject = forms.CharField(max_length=180)
+        description = forms.CharField(widget=forms.Textarea, max_length=2000)
+        def __init__(self, *args, **kwargs):
+            user = kwargs.pop("user")
+            super().__init__(*args, **kwargs)
+            self.fields["ticket"].queryset = MaintenanceTicket.objects.filter(technician__user=user)
+            for field in self.fields.values():
+                field.widget.attrs["class"] = "form-control"
+    form = ReportForm(request.POST or None, user=request.user)
+    if request.method == "POST" and form.is_valid():
+        technician = get_object_or_404(Technician, user=request.user)
+        report = TechnicianReport.objects.create(technician=technician, **form.cleaned_data)
+        for admin_user in __import__("django.contrib.auth", fromlist=["get_user_model"]).get_user_model().objects.filter(role="ADMIN"):
+            _notify(admin_user, "New technician report", f"{technician.name} submitted report #{report.pk}: {report.subject}", reverse("core:admin_maintenance"))
+        messages.success(request, "Your report was sent to the administrator.")
+        return redirect("maintenance:technician_tickets")
+    return render(request, "maintenance/technician_report.html", {"form": form})
 
 
 @login_required

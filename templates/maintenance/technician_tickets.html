@@ -18,15 +18,20 @@
       <div class="col-md-6"><div class="card shadow-sm h-100 ticket-card priority-{{ ticket.priority|lower }}"><div class="card-body">
         <div class="d-flex justify-content-between align-items-center gap-2"><h5 class="mb-0">#{{ ticket.pk }} {{ ticket.title }}</h5><span class="badge bg-secondary">{{ ticket.get_status_display }}</span></div>
         <p class="text-secondary mb-2"><strong>Tenant:</strong> {{ ticket.tenant.get_full_name|default:ticket.tenant.username }}</p>
+        <p class="mb-1"><strong>Tenant email:</strong> {{ ticket.tenant.email|default:"Not provided" }}</p>
+        {% if ticket.tenant.phone %}<p class="mb-2"><strong>Tenant phone:</strong> {{ ticket.tenant.phone }}</p>{% endif %}
         <p class="mb-2"><strong>Property:</strong> {{ ticket.property.title }}{% if ticket.room %} · Room {{ ticket.room.room_number }}{% endif %}</p>
         <p class="mb-2"><strong>Problem:</strong> {{ ticket.description|truncatechars:220 }}</p>
         <span class="badge {% if ticket.priority == 'EMERGENCY' or ticket.priority == 'HIGH' %}bg-danger{% elif ticket.priority == 'MEDIUM' %}bg-warning text-dark{% else %}bg-success{% endif %}">{{ ticket.get_priority_display }} priority</span>
         <div class="mt-3 d-flex flex-wrap gap-2">
-          {% if ticket.status == 'ASSIGNED' %}<form method="post" action="{% url 'maintenance:start_ticket' ticket.pk %}">{% csrf_token %}<button type="submit" class="btn btn-primary">Start Work</button></form>{% elif ticket.status == 'IN_PROGRESS' %}<a class="btn btn-success" href="{% url 'maintenance:resolve_ticket' ticket.pk %}">Resolve Issue</a>{% endif %}
+          {% if ticket.status == 'ASSIGNED' %}
+          <form method="post" action="{% url 'maintenance:accept_ticket' ticket.pk %}">{% csrf_token %}<button type="submit" class="btn btn-success">Accept Job</button></form>
+          <form method="post" action="{% url 'maintenance:reject_ticket' ticket.pk %}" onsubmit="return confirm('Are you sure you want to reject this job?');">{% csrf_token %}<button type="submit" class="btn btn-outline-danger">Reject Job</button></form>
+          {% elif ticket.status == 'IN_PROGRESS' %}<a class="btn btn-success" href="{% url 'maintenance:resolve_ticket' ticket.pk %}">Mark Work Resolved</a>{% endif %}
           <a class="btn btn-outline-secondary" href="{% url 'maintenance:ticket_detail' ticket.pk %}">View Details & Messages</a>
         </div>
       </div></div></div>
-    {% empty %}<div class="col-12"><div class="empty-state-card text-center py-5"><div class="fs-1">🛠️</div><h4>No requests assigned</h4><p class="text-secondary mb-0">New tenant maintenance requests will appear here after the property owner assigns them to you.</p></div></div>{% endfor %}
+    {% empty %}<div class="col-12"><div class="empty-state-card text-center py-5"><div class="fs-1">🛠️</div><h4>No requests assigned</h4><p class="text-secondary mb-0">New tenant requests assigned to you will appear here, with the tenant contact details and message link.</p></div></div>{% endfor %}
   </div>
 </div>
 {% endblock %}
