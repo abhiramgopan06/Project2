@@ -13,6 +13,7 @@ from .forms import (
     MaintenanceMessageForm,
     MaintenanceTicketForm,
     TechnicianAccountForm,
+    TechnicianEditForm,
     TechnicianForm,
 )
 from .models import MaintenanceMessage, MaintenanceTicket, Notification, Technician
@@ -161,6 +162,20 @@ def technician_create(request):
             messages.success(request, "Technician account created. Give the username and password to the technician.")
             return redirect("maintenance:technicians")
     return render(request, "maintenance/technician_form.html", {"form": form, "title": "Create Technician Account"})
+
+
+@login_required
+def technician_edit(request, pk):
+    if request.user.role != "OWNER":
+        messages.error(request, "Only property owners can edit technician details.")
+        return redirect("accounts:dashboard")
+    technician = get_object_or_404(Technician, pk=pk, owner=request.user)
+    form = TechnicianEditForm(request.POST or None, instance=technician)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Technician details updated successfully.")
+        return redirect("maintenance:technicians")
+    return render(request, "maintenance/technician_edit_form.html", {"form": form, "technician": technician})
 
 
 @login_required

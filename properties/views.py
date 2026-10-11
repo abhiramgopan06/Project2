@@ -5,6 +5,8 @@ from decimal import Decimal, InvalidOperation
 from django.db.models import ProtectedError, Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from bookings.models import Booking
 
 from .forms import PropertyForm, PropertyImageForm, RoomForm
 from .models import Property, PropertyImage, Room
@@ -82,7 +84,24 @@ def property_detail(request, pk):
         Property.objects.select_related("owner").prefetch_related("images", "rooms", "amenities"),
         pk=pk,
     )
-    return render(request, "properties/property_detail.html", {"property": property_obj})
+    can_report_property = False
+    if request.user.is_authenticated and getattr(request.user, "role", "") == "TENANT":
+        today = timezone.localdate()
+        active_bookings = Booking.objects.filter(
+            tenant=request.user,
+            property=property_obj,
+            status=Booking.Status.CONFIRMED,
+            start_date__lte=today,
+        )
+        can_report_property = any(
+            booking.end_date() and booking.end_date() >= today
+            for booking in active_bookings
+        )
+    return render(
+        request,
+        "properties/property_detail.html",
+        {"property": property_obj, "can_report_property": can_report_property},
+    )
 
 
 def owner_required(view_func):

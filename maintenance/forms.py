@@ -41,12 +41,21 @@ class TechnicianForm(forms.ModelForm):
     """Owner-only account creation form. Owners cannot edit credentials later."""
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput, min_length=8)
-    first_name = forms.CharField(max_length=150, required=False)
-    last_name = forms.CharField(max_length=150, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "form-control")
+        self.fields["available"].widget.attrs["class"] = "form-check-input"
 
     class Meta:
         model = Technician
-        fields = ["name", "email", "phone", "specialization", "available"]
+        fields = ["name", "email", "phone", "specialization", "location", "experience", "description", "available"]
+        widgets = {
+            "location": forms.TextInput(attrs={"placeholder": "Enter location"}),
+            "experience": forms.NumberInput(attrs={"min": "0", "max": "60", "placeholder": "Years of experience"}),
+            "description": forms.Textarea(attrs={"rows": 4, "placeholder": "Describe skills, services, and types of repairs handled."}),
+        }
 
     def clean_username(self):
         username = self.cleaned_data["username"].strip()
@@ -65,8 +74,6 @@ class TechnicianForm(forms.ModelForm):
         user = User(
             username=self.cleaned_data["username"],
             email=self.cleaned_data["email"],
-            first_name=self.cleaned_data["first_name"],
-            last_name=self.cleaned_data["last_name"],
             role=User.Role.TECHNICIAN,
         )
         user.set_password(self.cleaned_data["password"])
@@ -76,6 +83,24 @@ class TechnicianForm(forms.ModelForm):
         if commit:
             technician.save()
         return technician
+
+
+class TechnicianEditForm(forms.ModelForm):
+    """Simple form for an owner to edit a technician's work details."""
+    class Meta:
+        model = Technician
+        fields = ["name", "email", "phone", "specialization", "location", "experience", "description", "available"]
+        widgets = {
+            "location": forms.TextInput(attrs={"placeholder": "Enter location"}),
+            "experience": forms.NumberInput(attrs={"min": "0", "max": "60", "placeholder": "Years of experience"}),
+            "description": forms.Textarea(attrs={"rows": 4, "placeholder": "Describe skills, services, and types of repairs handled."}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "form-control")
+        self.fields["available"].widget.attrs["class"] = "form-check-input"
 
 
 class TechnicianAccountForm(forms.Form):

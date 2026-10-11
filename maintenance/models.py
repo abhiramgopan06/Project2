@@ -31,6 +31,9 @@ class Technician(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True)
     specialization = models.CharField(max_length=100, blank=True)
+    location = models.CharField(max_length=200, blank=True)
+    experience = models.PositiveSmallIntegerField(default=0, help_text="Years of relevant work experience")
+    description = models.TextField(blank=True, help_text="Describe the technician’s skills and services")
     available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

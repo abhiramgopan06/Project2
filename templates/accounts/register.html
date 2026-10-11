@@ -1,5 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Register | Rental Platform{% endblock %}
+{% block title %}Register | Rental Platform<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const phoneInput = document.getElementById("id_phone");
+  if (!phoneInput) return;
+  phoneInput.setAttribute("inputmode", "numeric");
+  phoneInput.setAttribute("maxlength", "10");
+  phoneInput.setAttribute("pattern", "[0-9]{10}");
+  phoneInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\\D/g, "").slice(0, 10);
+  });
+});
+</script>
+{% endblock %}
 {% block content %}
 <div class="auth-page py-5">
   <div class="container">
@@ -25,6 +37,12 @@
                     {{ field }}
                     <button class="btn btn-toggle-password" type="button" data-toggle-password="{{ field.id_for_label }}" aria-label="Show or hide password"><i class="bi bi-eye"></i></button>
                   </div>
+                  {% elif field.name == 'phone' %}
+                  <div class="input-group auth-input">
+                    <span class="input-group-text phone-country-code" aria-label="India country code">+91</span>
+                    {{ field }}
+                  </div>
+                  <div class="form-text">Enter 10 digits only. The +91 country code cannot be changed.</div>
                   {% else %}
                   {{ field }}
                   {% endif %}
@@ -44,4 +62,16 @@
     </div>
   </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const phoneInput = document.getElementById("id_phone");
+  if (!phoneInput) return;
+  phoneInput.setAttribute("inputmode", "numeric");
+  phoneInput.setAttribute("maxlength", "10");
+  phoneInput.setAttribute("pattern", "[0-9]{10}");
+  phoneInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\\D/g, "").slice(0, 10);
+  });
+});
+</script>
 {% endblock %}

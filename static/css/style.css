@@ -950,3 +950,17 @@ form textarea:disabled {
   .auth-steps .txt { display: none; }
   .auth-steps li.current .txt { display: inline; }
 }
+
+
+/* Registration phone country code */
+.phone-country-code {
+    background-color: var(--bs-tertiary-bg, #f8f9fa);
+    color: var(--bs-body-color, #212529);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    font-weight: 600;
+    min-width: 62px;
+    justify-content: center;
+}
+#id_phone {
+    min-width: 0;
+}

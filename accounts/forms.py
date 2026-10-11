@@ -1,10 +1,22 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import RegexValidator
 
 from .models import User
 
 
+phone_validator = RegexValidator(
+    regex=r"^[0-9]{10}$",
+    message="Enter exactly 10 digits for the Indian mobile number.",
+)
+
+
 class RegistrationForm(UserCreationForm):
+    phone = forms.CharField(
+        required=False,
+        validators=[phone_validator],
+        widget=forms.TextInput(attrs={"inputmode": "numeric", "maxlength": "10", "pattern": "[0-9]{10}"}),
+    )
     class Meta:
         model = User
         fields = [
@@ -54,6 +66,12 @@ class RegistrationForm(UserCreationForm):
 
 
 class ProfileForm(forms.ModelForm):
+    phone = forms.CharField(
+        required=False,
+        validators=[phone_validator],
+        widget=forms.TextInput(attrs={"inputmode": "numeric", "maxlength": "10", "pattern": "[0-9]{10}"}),
+    )
+
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email", "phone", "profile_image"]
