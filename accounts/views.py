@@ -46,8 +46,6 @@ def _send_otp(user):
     """Create a new OTP for the user, save only its hash, and email the real code."""
     now = timezone.now()
     code = _new_otp()
-    # update_or_create fills in every required column. (get_or_create(user=user) alone
-    # would try to insert an empty row and the database would reject it.)
     EmailVerification.objects.update_or_create(
         user=user,
         defaults={
@@ -118,7 +116,6 @@ def register(request):
         return redirect("accounts:dashboard")
 
     if request.method == "POST":
-        # Clear out an earlier unfinished sign-up that used the same username/email.
         _remove_pending_registrations(
             username=request.POST.get("username", "").strip(),
             email=request.POST.get("email", "").strip().lower(),
@@ -161,7 +158,6 @@ def verify_email(request):
         return redirect("accounts:register")
 
     if request.method == "POST":
-        # ---- "Resend OTP" button ----
         if request.POST.get("action") == "resend":
             seconds_since = (timezone.now() - verification.last_sent_at).total_seconds()
             if seconds_since < OTP_RESEND_SECONDS:
@@ -174,7 +170,6 @@ def verify_email(request):
                     messages.error(request, "We could not send a new code. Please try again.")
             return redirect("accounts:verify_email")
 
-        # ---- "Verify" button ----
         code = "".join(request.POST.get("otp", "").split())
         if not code.isdigit() or len(code) != OTP_LENGTH:
             messages.error(request, "Enter the 6-digit code from your email.")
@@ -298,8 +293,6 @@ def google_callback(request):
         user.save(update_fields=["password"])
 
     if not user.is_active:
-        # Google has confirmed this email, so a sign-up that was still waiting for its OTP can be finished.
-        # An account that an admin switched off must stay switched off.
         waiting = EmailVerification.objects.filter(user=user, verified=False).first()
         if waiting is None:
             messages.error(request, "This account is disabled. Please contact support.")
@@ -317,7 +310,6 @@ def user_login(request):
     if request.user.is_authenticated:
         return redirect("accounts:dashboard")
 
-    # After a successful OTP we remember the username so the box is already filled in.
     prefill_username = request.session.pop("verified_username", "")
 
     if request.method == "POST":
@@ -333,7 +325,6 @@ def user_login(request):
                 return redirect(next_url)
             return redirect("accounts:dashboard")
 
-        # Right password but email not verified yet? Send them back to the OTP page.
         waiting = User.objects.filter(
             username__iexact=username, is_active=False, email_verification__verified=False
         ).first()

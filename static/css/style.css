@@ -848,7 +848,6 @@ form textarea:disabled {
   }
 }
 
-/* ---------- Professional login / register / OTP pages ---------- */
 .auth-card {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
 }
@@ -952,7 +951,6 @@ form textarea:disabled {
 }
 
 
-/* Registration phone country code */
 .phone-country-code {
     background-color: var(--bs-tertiary-bg, #f8f9fa);
     color: var(--bs-body-color, #212529);

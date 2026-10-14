@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 5000);
     });
 
-    // Show / hide password buttons (login and register pages)
     document.querySelectorAll("[data-toggle-password]").forEach((button) => {
         button.addEventListener("click", () => {
             const input = document.getElementById(button.dataset.togglePassword);

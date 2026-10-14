@@ -35,7 +35,6 @@ class AuthenticationTests(TestCase):
         self.assertFalse(user.is_active)
         self.assertTrue(check_password("123456", user.email_verification.otp_hash))
         mock_send_mail.assert_called_once()
-        # the email goes to the address that was registered
         self.assertEqual(mock_send_mail.call_args[0][3], ["newtenant@example.com"])
 
     @patch("accounts.views.send_mail")
@@ -47,7 +46,6 @@ class AuthenticationTests(TestCase):
         user = User.objects.get(username="verifieduser")
         self.assertTrue(user.is_active)
         self.assertTrue(user.email_verification.verified)
-        # the login page now works with the registered details
         login_page = self.client.get(reverse("accounts:login"))
         self.assertContains(login_page, 'value="verifieduser"')
         login = self.client.post(reverse("accounts:login"), {"username": "verifieduser", "password": "StrongPass123!"})
@@ -67,15 +65,12 @@ class AuthenticationTests(TestCase):
     @patch("accounts.views._new_otp", side_effect=["111111", "222222"])
     def test_resend_sends_a_fresh_code_that_replaces_the_old_one(self, mock_otp, mock_send_mail):
         self._register(username="resender", email="resender@example.com")
-        # too soon: no new email
         self.client.post(reverse("accounts:verify_email"), {"action": "resend"})
         self.assertEqual(mock_send_mail.call_count, 1)
-        # pretend 31 seconds have passed
         EmailVerification.objects.filter(user__username="resender").update(
             last_sent_at=timezone.now() - timedelta(seconds=31))
         self.client.post(reverse("accounts:verify_email"), {"action": "resend"})
         self.assertEqual(mock_send_mail.call_count, 2)
-        # old code no longer works, new code does
         self.client.post(reverse("accounts:verify_email"), {"otp": "111111"})
         self.assertFalse(User.objects.get(username="resender").is_active)
         response = self.client.post(reverse("accounts:verify_email"), {"otp": "222222"})
@@ -96,7 +91,6 @@ class AuthenticationTests(TestCase):
         self._register(username="locked", email="locked@example.com")
         for _ in range(5):
             self.client.post(reverse("accounts:verify_email"), {"otp": "000000"})
-        # even the right code is refused now
         self.client.post(reverse("accounts:verify_email"), {"otp": "123456"})
         self.assertFalse(User.objects.get(username="locked").is_active)
         page = self.client.get(reverse("accounts:verify_email"))

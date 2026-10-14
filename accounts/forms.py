@@ -40,7 +40,6 @@ class RegistrationForm(UserCreationForm):
         self.fields["email"].required = True
         self.fields["phone"].required = False
 
-        # Bootstrap classes, placeholders and browser autofill hints
         hints = {
             "username": ("Choose a username", "username"),
             "first_name": ("First name", "given-name"),
