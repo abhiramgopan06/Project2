@@ -6,10 +6,11 @@ from django.db.models import ProtectedError, Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from bookings.models import Booking
 
-from .forms import PropertyForm, PropertyImageForm, RoomForm
-from .models import Property, PropertyImage, Room
+from .forms import PropertyForm, PropertyImageForm, PropertyVerificationDocumentForm, RoomForm
+from .models import Property, PropertyImage, PropertyVerificationDocument, Room, SavedProperty
 
 
 def property_list(request):
@@ -62,6 +63,13 @@ def property_list(request):
         rent_error = "Minimum rent cannot be greater than maximum rent."
         properties = Property.objects.none()
 
+    sort = request.GET.get("sort", "newest")
+    sort_options = {"newest": "-created_at", "rent_low": "rent", "rent_high": "-rent", "title": "title"}
+    properties = properties.order_by(sort_options.get(sort, "-created_at"))
+    saved_ids = set()
+    if request.user.is_authenticated and getattr(request.user, "role", "") == "TENANT":
+        saved_ids = set(SavedProperty.objects.filter(user=request.user).values_list("property_id", flat=True))
+
     paginator = Paginator(properties, 9)
     page_obj = paginator.get_page(request.GET.get("page", 1))
 
@@ -75,6 +83,8 @@ def property_list(request):
             "filters": request.GET,
             "rent_error": rent_error,
             "result_count": paginator.count,
+            "sort": sort,
+            "saved_ids": saved_ids,
         },
     )
 
@@ -100,7 +110,8 @@ def property_detail(request, pk):
     return render(
         request,
         "properties/property_detail.html",
-        {"property": property_obj, "can_report_property": can_report_property},
+        {"property": property_obj, "can_report_property": can_report_property,
+         "is_saved": request.user.is_authenticated and SavedProperty.objects.filter(user=request.user, property=property_obj).exists() if getattr(request.user, "role", "") == "TENANT" else False},
     )
 
 
@@ -184,7 +195,8 @@ def owner_property_detail(request, pk):
         owner=request.user,
     )
     image_form = PropertyImageForm()
-    return render(request, "properties/owner_property_detail.html", {"property": property_obj, "image_form": image_form})
+    verification_form = PropertyVerificationDocumentForm()
+    return render(request, "properties/owner_property_detail.html", {"property": property_obj, "image_form": image_form, "verification_form": verification_form})
 
 
 @owner_required
@@ -268,3 +280,47 @@ def room_delete(request, pk, room_pk):
         messages.success(request, "Room deleted successfully.")
         return redirect("properties:owner_property_detail", pk=pk)
     return render(request, "properties/room_confirm_delete.html", {"property": property_obj, "room": room})
+
+
+@login_required
+def toggle_saved_property(request, pk):
+    if request.method != "POST" or request.user.role != "TENANT":
+        messages.error(request, "Only tenants can save properties.")
+        return redirect("properties:list")
+    property_obj = get_object_or_404(Property, pk=pk, available=True)
+    saved, created = SavedProperty.objects.get_or_create(user=request.user, property=property_obj)
+    if not created:
+        saved.delete()
+        messages.info(request, "Property removed from your saved list.")
+    else:
+        messages.success(request, "Property saved for later.")
+    next_url = request.POST.get("next", "")
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return redirect(next_url)
+    return redirect("properties:list")
+
+
+@login_required
+def saved_properties(request):
+    if request.user.role != "TENANT":
+        messages.error(request, "Saved properties are available to tenant accounts.")
+        return redirect("accounts:dashboard")
+    saved = SavedProperty.objects.filter(user=request.user, property__available=True).select_related("property", "property__owner").prefetch_related("property__images", "property__amenities", "property__rooms")
+    return render(request, "properties/saved_properties.html", {"saved_properties": saved})
+
+
+@owner_required
+def upload_verification_document(request, pk):
+    property_obj = get_object_or_404(Property, pk=pk, owner=request.user)
+    if request.method == "POST":
+        form = PropertyVerificationDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.property = property_obj
+            document.save()
+            property_obj.verification_status = Property.VerificationStatus.PENDING
+            property_obj.save(update_fields=["verification_status"])
+            messages.success(request, "Document submitted. The admin team must review it before the verified label appears.")
+        else:
+            messages.error(request, "Please upload a valid document and try again.")
+    return redirect("properties:owner_property_detail", pk=pk)

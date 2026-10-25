@@ -6,13 +6,16 @@ A Django-based rental property management platform with Admin, Property Owner, T
 
 - Role-based authentication and authorization
 - Owner property/room/image/amenity management
-- Tenant property discovery, search, and filters
+- Tenant property discovery, search, rent filters, sorting, and saved-property shortlist
+- Admin-reviewed property verification status and document submission; the public verified badge is only shown after admin approval
 - Rental requests (move-in date and rental duration of 1-60 months) and owner approval/rejection
 - Booking management, including the rental duration and stay end date
 - Mock payments with transaction history
-- Maintenance ticket workflow: Open → Assigned → In Progress → Resolved → Closed
+- Maintenance ticket workflow: Open → Assigned → Accepted → In Progress → Resolved → Closed, with rejected jobs available for reassignment
+- Maintenance evidence photos before and after repair, plus technician resolution notes
 - Technician assignment and technician dashboard
 - Property reporting and admin review
+- Responsive landing page, clearer role-based navigation, and featured listing cards
 - Email notifications using Django's console email backend
 - Bootstrap responsive UI with a light / dark mode button in the menu bar
 - Tested with Django 6.1 (`requirements.txt` allows Django 5.0 up to, but not including, 7.0)
@@ -91,3 +94,25 @@ Email verification and Google sign-in setup
 5. The verification code expires after 10 minutes. A Resend OTP option is available with a short resend delay.
 6. For Google sign-in, create OAuth 2.0 Web Application credentials in Google Cloud Console. Add http://127.0.0.1:8000/accounts/google/callback/ as an authorized redirect URI, then set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.
 7. Google sign-in uses the verified Google email. A new Google account is created as a Tenant; an existing account with the same email is signed in.
+
+
+## New verification and saved-property workflow
+
+1. An owner opens a property from the owner dashboard and uploads a PDF/JPG/PNG proof document (up to 8 MB).
+2. An administrator opens **Properties** in Django Admin, checks the submitted documents, then changes the property's verification status to **Verified** or **Needs changes**. Add a short review note when more information is needed.
+3. The verified label is shown publicly only when an administrator has approved the listing. Uploading a new document returns a non-verified listing to pending review.
+4. Tenant accounts can save and remove listings, visit **Saved** in the navbar, and sort property search results by rent or name.
+
+## Database updates
+
+After extracting this version, activate your virtual environment and run:
+
+```bash
+python manage.py migrate
+python manage.py check
+python manage.py test
+```
+
+The maintenance lifecycle now separates **Accept Job** from **Start Work**. A technician must accept an assignment before starting it. Tenants can attach an issue photo, and technicians can optionally attach a completion photo with their resolution note.
+
+Payment features are demo/mock payments and must not be used to process real money without a payment-provider integration and verified server-side webhooks.

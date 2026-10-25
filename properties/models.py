@@ -53,6 +53,13 @@ class Property(models.Model):
     number_of_rooms = models.PositiveIntegerField(default=1)
     rent = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     available = models.BooleanField(default=True, db_index=True)
+    class VerificationStatus(models.TextChoices):
+        PENDING = "PENDING", "Pending review"
+        VERIFIED = "VERIFIED", "Verified"
+        REJECTED = "REJECTED", "Needs changes"
+
+    verification_status = models.CharField(max_length=12, choices=VerificationStatus.choices, default=VerificationStatus.PENDING, db_index=True)
+    verification_note = models.CharField(max_length=300, blank=True)
     amenities = models.ManyToManyField(Amenity, blank=True, related_name="properties")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -134,3 +141,29 @@ class Room(models.Model):
 
     def __str__(self):
         return f"{self.property.title} - Room {self.room_number}"
+
+
+class SavedProperty(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_properties")
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="saved_by")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [models.UniqueConstraint(fields=["user", "property"], name="unique_saved_property_per_user")]
+
+    def __str__(self):
+        return f"{self.user} saved {self.property}"
+
+
+class PropertyVerificationDocument(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="verification_documents")
+    document = models.FileField(upload_to="verification_documents/%Y/%m/")
+    description = models.CharField(max_length=180, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return f"Verification document for {self.property.title}"

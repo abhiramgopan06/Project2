@@ -1,6 +1,7 @@
 from django import forms
+from pathlib import Path
 
-from .models import Amenity, Property, PropertyImage, Room
+from .models import Amenity, Property, PropertyImage, PropertyVerificationDocument, Room
 
 
 class PropertyForm(forms.ModelForm):
@@ -67,4 +68,23 @@ class RoomForm(forms.ModelForm):
         widgets = {
             "rent": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
             "description": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class PropertyVerificationDocumentForm(forms.ModelForm):
+    def clean_document(self):
+        document = self.cleaned_data["document"]
+        allowed_extensions = {".pdf", ".jpg", ".jpeg", ".png"}
+        if Path(document.name).suffix.lower() not in allowed_extensions:
+            raise forms.ValidationError("Upload a PDF, JPG, JPEG or PNG document.")
+        if document.size > 8 * 1024 * 1024:
+            raise forms.ValidationError("The document must be smaller than 8 MB.")
+        return document
+
+    class Meta:
+        model = PropertyVerificationDocument
+        fields = ["document", "description"]
+        widgets = {
+            "document": forms.ClearableFileInput(attrs={"accept": ".pdf,.jpg,.jpeg,.png"}),
+            "description": forms.TextInput(attrs={"placeholder": "e.g. Ownership proof or authorisation"}),
         }

@@ -8,6 +8,14 @@
   </div>
 
 {% if notifications %}<div class="card border-0 shadow-sm mb-4"><div class="card-body"><h5 class="fw-bold">🔔 Notifications</h5>{% for note in notifications %}<div class="notification-item p-3 rounded mb-2"><div class="d-flex justify-content-between gap-3"><div><strong>{{ note.title }}</strong><p class="mb-1">{{ note.message }}</p><small class="text-secondary">{{ note.created_at|date:"d M Y, h:i A" }}</small></div><form method="post" action="{% url 'maintenance:mark_notification_read' note.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'accounts:owner_dashboard' %}"><button class="btn btn-sm btn-outline-secondary">Mark read</button></form></div></div>{% endfor %}</div></div>{% endif %}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-xl-2"><div class="stat-card"><p>Total properties</p><div class="display-6 fw-bold">{{ stats.property_count }}</div></div></div>
+    <div class="col-6 col-xl-2"><div class="stat-card"><p>Available listings</p><div class="display-6 fw-bold">{{ stats.available_count }}</div></div></div>
+    <div class="col-6 col-xl-2"><div class="stat-card"><p>Pending requests</p><div class="display-6 fw-bold">{{ stats.pending_requests }}</div></div></div>
+    <div class="col-6 col-xl-2"><div class="stat-card"><p>Active bookings</p><div class="display-6 fw-bold">{{ stats.active_bookings }}</div></div></div>
+    <div class="col-6 col-xl-2"><div class="stat-card"><p>Expected monthly rent</p><div class="h3 fw-bold mt-2">₹{{ stats.monthly_rent|floatformat:0 }}</div></div></div>
+    <div class="col-6 col-xl-2"><div class="stat-card"><p>Open repairs</p><div class="display-6 fw-bold">{{ stats.open_tickets }}</div></div></div>
+  </div>
   <div class="row g-4">
     <div class="col-md-6 col-lg-4"><a href="{% url 'properties:owner_property_list' %}" class="dashboard-card"><div class="fs-2">🏠</div><h5>My Properties</h5><p>Add, edit and manage your properties.</p></a></div>
     <div class="col-md-6 col-lg-4"><a href="{% url 'properties:create' %}" class="dashboard-card"><div class="fs-2">➕</div><h5>Add Property</h5><p>Create a new rental listing.</p></a></div>

@@ -27,6 +27,7 @@
           {% if ticket.status == 'ASSIGNED' %}
           <form method="post" action="{% url 'maintenance:accept_ticket' ticket.pk %}">{% csrf_token %}<button type="submit" class="btn btn-success">Accept Job</button></form>
           <form method="post" action="{% url 'maintenance:reject_ticket' ticket.pk %}" onsubmit="return confirm('Are you sure you want to reject this job?');">{% csrf_token %}<button type="submit" class="btn btn-outline-danger">Reject Job</button></form>
+          {% elif ticket.status == 'ACCEPTED' %}<form method="post" action="{% url 'maintenance:start_ticket' ticket.pk %}">{% csrf_token %}<button type="submit" class="btn btn-primary">Start Work</button></form>
           {% elif ticket.status == 'IN_PROGRESS' %}<a class="btn btn-success" href="{% url 'maintenance:resolve_ticket' ticket.pk %}">Mark Work Resolved</a>{% endif %}
           <a class="btn btn-outline-secondary" href="{% url 'maintenance:ticket_detail' ticket.pk %}">View Details & Messages</a>
         </div>

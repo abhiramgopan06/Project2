@@ -9,8 +9,8 @@ User = get_user_model()
 class MaintenanceTicketForm(forms.ModelForm):
     class Meta:
         model = MaintenanceTicket
-        fields = ["property", "room", "title", "description", "priority"]
-        widgets = {"description": forms.Textarea(attrs={"rows": 5, "placeholder": "Explain the problem clearly so the technician can prepare before visiting."})}
+        fields = ["property", "room", "title", "description", "tenant_photo", "priority"]
+        widgets = {"description": forms.Textarea(attrs={"rows": 5, "placeholder": "Explain the problem clearly so the technician can prepare before visiting."}), "tenant_photo": forms.ClearableFileInput(attrs={"accept": "image/*"})}
 
     def __init__(self, *args, tenant=None, **kwargs):
         super().__init__(*args, **kwargs)

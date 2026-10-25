@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
 from bookings.models import Booking
@@ -25,7 +26,12 @@ def payment_history(request):
     if blocked:
         return blocked
     payments = Payment.objects.filter(tenant=request.user).select_related("booking", "booking__property", "booking__room")
-    return render(request, "payments/payment_history.html", {"payments": payments})
+    totals = payments.aggregate(
+        total_paid=Sum("amount", filter=Q(status=Payment.Status.SUCCESS)),
+        total_failed=Count("pk", filter=Q(status=Payment.Status.FAILED)),
+        total_pending=Count("pk", filter=Q(status=Payment.Status.PENDING)),
+    )
+    return render(request, "payments/payment_history.html", {"payments": payments, "totals": totals, "invoice_count": payments.count()})
 
 
 @login_required

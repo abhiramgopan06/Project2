@@ -59,6 +59,7 @@ class MaintenanceTicket(models.Model):
     class Status(models.TextChoices):
         OPEN = "OPEN", "Open"
         ASSIGNED = "ASSIGNED", "Assigned"
+        ACCEPTED = "ACCEPTED", "Accepted by Technician"
         IN_PROGRESS = "IN_PROGRESS", "In Progress"
         RESOLVED = "RESOLVED", "Resolved"
         CLOSED = "CLOSED", "Closed"
@@ -71,6 +72,8 @@ class MaintenanceTicket(models.Model):
     technician = models.ForeignKey(Technician, on_delete=models.SET_NULL, null=True, blank=True, related_name="tickets")
     title = models.CharField(max_length=200)
     description = models.TextField()
+    tenant_photo = models.ImageField(upload_to="maintenance/reported/%Y/%m/", blank=True, null=True)
+    resolution_photo = models.ImageField(upload_to="maintenance/resolved/%Y/%m/", blank=True, null=True)
     priority = models.CharField(max_length=12, choices=Priority.choices, default=Priority.MEDIUM)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.OPEN, db_index=True)
     owner_note = models.TextField(blank=True)

@@ -16,8 +16,13 @@ from .models import PropertyReport
 
 
 def home(request):
-    featured = Property.objects.filter(available=True).prefetch_related("images")[:6]
-    return render(request, "home.html", {"featured_properties": featured})
+    available = Property.objects.filter(available=True)
+    featured = available.select_related("owner").prefetch_related("images", "amenities", "rooms")[:6]
+    return render(request, "home.html", {
+        "featured_properties": featured,
+        "available_count": available.count(),
+        "verified_count": available.filter(verification_status=Property.VerificationStatus.VERIFIED).count(),
+    })
 
 
 @login_required

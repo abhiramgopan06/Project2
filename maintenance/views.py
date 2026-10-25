@@ -48,7 +48,7 @@ def create_ticket(request):
     if not confirmed.exists():
         messages.warning(request, "You need a confirmed booking before creating a maintenance request.")
         return redirect("maintenance:tenant_tickets")
-    form = MaintenanceTicketForm(request.POST or None, tenant=request.user)
+    form = MaintenanceTicketForm(request.POST or None, request.FILES or None, tenant=request.user)
     if request.method == "POST" and form.is_valid():
         ticket = form.save(commit=False)
         ticket.tenant = request.user
@@ -108,7 +108,7 @@ def owner_tickets(request):
 @login_required
 def assign_ticket(request, pk):
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, property__owner=request.user)
-    if ticket.status not in {MaintenanceTicket.Status.OPEN, MaintenanceTicket.Status.ASSIGNED}:
+    if ticket.status not in {MaintenanceTicket.Status.OPEN, MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.REJECTED}:
         messages.warning(request, "This ticket cannot be reassigned at its current status.")
         return redirect("maintenance:owner_tickets")
     form = AssignTechnicianForm(request.POST or None, instance=ticket, owner=request.user)
@@ -185,7 +185,7 @@ def technician_delete(request, pk):
         return redirect("accounts:dashboard")
     technician = get_object_or_404(Technician.objects.select_related("user"), pk=pk, owner=request.user)
     if request.method == "POST":
-        if technician.tickets.filter(status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.IN_PROGRESS]).exists():
+        if technician.tickets.filter(status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.ACCEPTED, MaintenanceTicket.Status.IN_PROGRESS]).exists():
             messages.error(request, "This technician has active work. Reassign those requests before deleting the account.")
             return redirect("maintenance:technicians")
         technician.user.delete()
@@ -228,9 +228,9 @@ def technician_tickets(request):
     if request.user.role != "TECHNICIAN":
         messages.error(request, "Only technicians can access this dashboard.")
         return redirect("accounts:dashboard")
-    tickets = MaintenanceTicket.objects.filter(technician__user=request.user, status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.IN_PROGRESS, MaintenanceTicket.Status.RESOLVED]).select_related("property", "room", "tenant")
+    tickets = MaintenanceTicket.objects.filter(technician__user=request.user, status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.ACCEPTED, MaintenanceTicket.Status.IN_PROGRESS, MaintenanceTicket.Status.RESOLVED]).select_related("property", "room", "tenant")
     stats = {
-        "assigned": tickets.filter(status=MaintenanceTicket.Status.ASSIGNED).count(),
+        "assigned": tickets.filter(status__in=[MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.ACCEPTED]).count(),
         "in_progress": tickets.filter(status=MaintenanceTicket.Status.IN_PROGRESS).count(),
         "resolved": tickets.filter(status=MaintenanceTicket.Status.RESOLVED).count(),
     }
@@ -244,7 +244,7 @@ def accept_ticket(request, pk):
     if request.user.role != "TECHNICIAN" or request.method != "POST":
         return redirect("maintenance:technician_tickets")
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician__user=request.user, status=MaintenanceTicket.Status.ASSIGNED)
-    ticket.status = MaintenanceTicket.Status.IN_PROGRESS
+    ticket.status = MaintenanceTicket.Status.ACCEPTED
     ticket.save(update_fields=["status", "updated_at"])
     _notify(ticket.tenant, "Technician accepted your request", f"The technician accepted ticket #{ticket.pk}. You can message them for details.", reverse("maintenance:ticket_detail", args=[ticket.pk]))
     messages.success(request, "You accepted the job.")
@@ -316,7 +316,7 @@ def start_ticket(request, pk):
     ticket = get_object_or_404(MaintenanceTicket, pk=pk, technician__user=request.user)
     if request.method != "POST":
         return redirect("maintenance:technician_tickets")
-    if ticket.status == MaintenanceTicket.Status.ASSIGNED:
+    if ticket.status == MaintenanceTicket.Status.ACCEPTED:
         ticket.status = MaintenanceTicket.Status.IN_PROGRESS
         ticket.save(update_fields=["status", "updated_at"])
         _notify(ticket.tenant, "Technician started work", f"Your technician has started work on ticket #{ticket.pk}.", reverse("maintenance:ticket_detail", args=[ticket.pk]))
@@ -336,8 +336,10 @@ def resolve_ticket(request, pk):
             messages.error(request, "Please add a short explanation of what you fixed.")
         else:
             ticket.technician_note = note
+            if request.FILES.get("resolution_photo"):
+                ticket.resolution_photo = request.FILES["resolution_photo"]
             ticket.mark_resolved()
-            ticket.save(update_fields=["technician_note", "updated_at"])
+            ticket.save(update_fields=["technician_note", "resolution_photo", "updated_at"])
             _notify(ticket.tenant, "Maintenance request resolved", f"Your technician marked ticket #{ticket.pk} as resolved.", reverse("maintenance:ticket_detail", args=[ticket.pk]))
             messages.success(request, "Ticket marked as resolved.")
             return redirect("maintenance:technician_tickets")

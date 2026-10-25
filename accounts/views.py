@@ -18,7 +18,9 @@ from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from bookings.reminders import rent_reminders_for
-from maintenance.models import Notification
+from bookings.models import Booking, RentalRequest
+from properties.models import Property
+from maintenance.models import MaintenanceTicket, Notification
 
 from .forms import ProfileForm, RegistrationForm
 from .models import EmailVerification, User
@@ -123,7 +125,7 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False  # stays locked until the OTP is confirmed
+            user.is_active = False
             user.save()
             try:
                 _send_otp(user)
@@ -388,7 +390,18 @@ def owner_dashboard(request):
         messages.error(request, "Access denied. Owner access is required.")
         return redirect("accounts:dashboard")
     notifications = Notification.objects.filter(recipient=request.user, is_read=False)[:5]
-    return render(request, "accounts/owner_dashboard.html", {"notifications": notifications})
+    properties = Property.objects.filter(owner=request.user)
+    active_bookings = Booking.objects.filter(property__owner=request.user, status=Booking.Status.CONFIRMED).select_related("property", "room")
+    monthly_rent = sum((booking.monthly_rent() for booking in active_bookings), start=0)
+    stats = {
+        "property_count": properties.count(),
+        "available_count": properties.filter(available=True).count(),
+        "pending_requests": RentalRequest.objects.filter(property__owner=request.user, status=RentalRequest.Status.PENDING).count(),
+        "active_bookings": active_bookings.count(),
+        "monthly_rent": monthly_rent,
+        "open_tickets": MaintenanceTicket.objects.filter(property__owner=request.user, status__in=[MaintenanceTicket.Status.OPEN, MaintenanceTicket.Status.ASSIGNED, MaintenanceTicket.Status.ACCEPTED, MaintenanceTicket.Status.IN_PROGRESS]).count(),
+    }
+    return render(request, "accounts/owner_dashboard.html", {"notifications": notifications, "stats": stats})
 
 
 @login_required
